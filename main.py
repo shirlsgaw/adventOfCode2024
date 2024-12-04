@@ -57,7 +57,7 @@ def up_diagonal(row, col, lstr):
     test += lsub[3 - i][col + i]
   return is_match(test)
 
-inputs = readlines('sample.txt')
+inputs = readlines('input4.txt')
 
 total = 0
 for row in range(0, len(inputs)):
