@@ -6,7 +6,9 @@ def readlines(source):
       return list(map(lambda x: x.rstrip(), lines))
 
 def is_match(str):
-  return str == 'XMAS' or str == 'SAMX'
+  result = (str == 'XMAS' or str == 'SAMX')
+  print(f' {str}: {result}')
+  return result
 
 def horizontal(start, str):
   if len(str) < 4:
@@ -15,10 +17,59 @@ def horizontal(start, str):
   print(f' {sub}: {is_match(sub)}')
   return is_match(sub)
 
+def vertical(row, col, lstr):
+  if len(lstr) < 4:
+    return False
+  lsub = lstr[row:]
+  for x in lsub:
+    if len(x) < col + 1:
+      return False
+  test = ''
+  for i in range(0,4):
+    test += lsub[i][col]
+  print(f' {test}: {is_match(test)}')
+  return is_match(test)
+
+def down_diagonal(row, col, lstr):
+  print(lstr)
+  if len(lstr) < 4:
+    print('rows')
+    return False
+  lsub = lstr[row:row+4]
+  for x in lsub:
+    if len(x) < col + 4:
+      print(f'cols: {x}')
+      return False
+  test = ''
+  for i in range(0,4):
+    test += lsub[i][col+i]
+  return is_match(test)
+  
 print('Hello world!')
+tests = [['1X11',
+          '2M22',
+          '3A33',
+          '4S44'],
+         ['0000',
+          '1X11',
+          '2M22',
+          '3A33',
+          '4S44'],
+         ['00000',
+          '1X111',
+          '22M22',
+          '333A3',
+          '4444S']
+        ]
 inputs = readlines('test.txt')
-for line in inputs:
-  for i in range(0, len(line)-3):
-    print(horizontal(i, line))
+#print(vertical(0,0,tests[0]))
+#print(vertical(0,1,tests[0]))
+#print(vertical(0,1,tests[1]))
+#print(vertical(1,1,tests[1]))
+print(down_diagonal(0,0, tests[0]))
+print(down_diagonal(1,1, tests[2]))
+#for line in inputs:
+#  for i in range(0, len(line)-3):
+#    print(horizontal(i, line))
   
 
