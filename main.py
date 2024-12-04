@@ -57,20 +57,7 @@ def up_diagonal(row, col, lstr):
     test += lsub[3 - i][col + i]
   return is_match(test)
 
-
-tests = [['1X11', '2M22', '3A33', '4S44'],
-         ['0000', '1X11', '2M22', '3A33', '4S44'],
-         ['00000', '1X111', '22M22', '333A3', '4444S']]
 inputs = readlines('sample.txt')
-#print(vertical(0,0,tests[0]))
-#print(vertical(0,1,tests[0]))
-#print(vertical(0,1,tests[1]))
-#print(vertical(1,1,tests[1]))
-#print(down_diagonal(0,0, tests[0]))
-#print(down_diagonal(1,1, tests[2]))
-#print(up_diagonal(1,1, tests[2]))
-#print(up_diagonal(3,1, tests[2]))
-#print(up_diagonal(3,1, inputs))
 
 total = 0
 for row in range(0, len(inputs)):
