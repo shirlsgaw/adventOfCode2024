@@ -66,50 +66,27 @@ def has_incr_match(page1, page2, rules):
 ####
 # Main
 ####
-inputs = readlines('sample.txt')
+inputs = readlines('input5.txt')
 
 increasing_rules, decreasing_rules, updates = extract_rules_and_updates(inputs)
 
-print('Increasing Rules:')
-debug_rules(increasing_rules)
-print('Decreasing Rules:')
-debug_rules(decreasing_rules, is_increasing=False)
+#print('Increasing Rules:')
+#debug_rules(increasing_rules)
+#print('Decreasing Rules:')
+#debug_rules(decreasing_rules, is_increasing=False)
 
-#debug_updates(updates)
-
-#print(has_match(23, 42, {23: [5]}, is_increasing=False))
-#print(has_match(23, 4, {23: [51]}, is_increasing=True))
-
-#print(has_match(23, 6, {23: [5]}, is_increasing=False))
-#print(has_match(23, 5, {23: [5]}, is_increasing=False))
-#print(has_match(23, 3, {23: [5]}, is_increasing=False))
-#print(has_match(23, 3, {23: [10, 7, 5]}, is_increasing=False))
-
-#print(has_match(23, 41, {23: [5]}, is_increasing=True))
-#print(has_match(23, 51, {23: [5]}, is_increasing=True))
-#print(has_match(23, 99, {23: [5]}, is_increasing=True))
-#print(has_match(23, 99, {23: [5, 50, 75]}, is_increasing=True))
-
-#print(has_match(75, 47, increasing_rules, is_increasing=True))
-#print(has_match(75, 47, decreasing_rules, is_increasing=False))
-
-#print(has_match(47, 75, increasing_rules, is_increasing=True))
-#print(has_match(47, 75, decreasing_rules, is_increasing=False))
-
-updates = [
-          [75,47,61,53,29],
-          [47, 53],
-          [53, 47], # Rule violation 47 before 53
-          [75, 47],
-          [75, 97]  # Rule violation 75 before 97
-         ]
+total = 0
 for update in updates:
-  print(update)
+  has_violation = False
   for i in range(0, len(update)):
     for j in range(i+1, len(update)):
       if has_incr_match(update[j], update[i], increasing_rules):
-        print(f' Rule violation: {update[i]} -> {update[j]}')
-      if has_decr_match(update[j], update[i], decreasing_rules):
-        print(f' Rule decr violation: {update[i]} -> {update[j]}')
-total = 0
+        has_violation = True
+      elif has_decr_match(update[j], update[i], decreasing_rules):
+        has_violation = True
+  if not has_violation:
+    mid = int(len(update) / 2)
+    total += update[mid]
+    
+
 print(f'Total: {total}')
