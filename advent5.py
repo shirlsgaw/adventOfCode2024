@@ -31,9 +31,9 @@ def extract_rules_and_updates(lines):
 
   # Remove overlapping rules
   for key, values in increasing_rules.items():
-    increasing_rules[key] = compact_rule(values)
+    increasing_rules[key] = values.sort()
   for key, values in decreasing_rules.items():
-    decreasing_rules[key] = compact_rule(values, is_increasing=False)
+    decreasing_rules[key] = values.sort(reverse=True)
     
   return increasing_rules, decreasing_rules, updates
 
@@ -46,13 +46,6 @@ def debug_updates(updates):
   for update in updates:
     print(f'Update: {update}')
 
-def compact_rule(values, is_increasing=True):
-  values.sort()
-  if not is_increasing:
-    values.reverse()
-  value = values.pop()
-  return value
-
 def has_match(page1, page2, rules, is_increasing=True):
   if is_increasing and page2 < page1:
     print(f' Increasing wrong order: {page1} < {page2}')
@@ -63,8 +56,9 @@ def has_match(page1, page2, rules, is_increasing=True):
   if page1 not in rules:
     print(f' No rule for {page1}')
     return False
-  rule_value = rules[page1]
-  print(f' Rule: {page1} -> {rule_value}, {page2}')
+  valuesl = rules[page1]
+  rule_value = valuesl[len(valuesl) - 1]
+  print(f' Rule: {page1} -> {rules[page1]} ({rule_value}), {page2}')
   if is_increasing:
     return page2 <= rule_value
   else:
@@ -84,15 +78,17 @@ increasing_rules, decreasing_rules, updates = extract_rules_and_updates(inputs)
 
 #debug_updates(updates)
 
-#print(has_match(23, 42, {23: 5}, is_increasing=False))
-#print(has_match(23, 4, {23: 51}, is_increasing=True))
+print(has_match(23, 42, {23: [5]}, is_increasing=False))
+print(has_match(23, 4, {23: [51]}, is_increasing=True))
 
-#print(has_match(23, 6, {23: 5}, is_increasing=False))
-#print(has_match(23, 3, {23: 5}, is_increasing=False))
-#print(has_match(23, 5, {23: 5}, is_increasing=False))
+print(has_match(23, 6, {23: [5]}, is_increasing=False))
+print(has_match(23, 5, {23: [5]}, is_increasing=False))
+print(has_match(23, 3, {23: [5]}, is_increasing=False))
+print(has_match(23, 3, {23: [10, 7, 5]}, is_increasing=False))
 
-#print(has_match(23, 41, {23: 51}, is_increasing=True))
-#print(has_match(23, 99, {23: 51}, is_increasing=True))
-#print(has_match(23, 51, {23: 51}, is_increasing=True))
+print(has_match(23, 41, {23: [5]}, is_increasing=True))
+print(has_match(23, 51, {23: [5]}, is_increasing=True))
+print(has_match(23, 99, {23: [5]}, is_increasing=True))
+print(has_match(23, 99, {23: [5, 50, 75]}, is_increasing=True))
 total = 0
 print(f'Total: {total}')
