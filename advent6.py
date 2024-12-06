@@ -1,5 +1,4 @@
 from enum import Enum
-from os import cpu_count
 from typing import Self
 
 Direction = Enum('Direction', [('NORTH', 1), ('EAST', 2), ('SOUTH', 3),
@@ -11,7 +10,7 @@ class GuardLocation:
   y = 0
   direction = Direction.NORTH
 
-  def __init__(self, x:int, y:int, direction: Direction):
+  def __init__(self, x: int, y: int, direction: Direction):
     self.x = x
     self.y = y
     self.direction = direction
@@ -47,8 +46,9 @@ class GuardLocation:
         else:
           self.x -= 1
           has_moved = True
-      
+
     return self
+
 
 def readlines(source: str) -> list[str]:
   with open(source, "r") as f:
@@ -56,7 +56,7 @@ def readlines(source: str) -> list[str]:
     return list(map(lambda x: x.rstrip(), lines))
 
 
-def find_guard(lab_map: list[str]):
+def find_guard(lab_map: list[str]) -> (GuardLocation | None):
   for row_index in range(0, len(lab_map)):
     row = lab_map[row_index]
     guard_index = row.find('^')
@@ -71,6 +71,8 @@ def find_guard(lab_map: list[str]):
     guard_index = row.find('<')
     if (guard_index > -1):
       return GuardLocation(row_index, guard_index, Direction.WEST)
+  return None
+
 
 def mark_guard(guard: GuardLocation, lab_map: list[str]) -> list[str]:
   row = lab_map[guard.y]
@@ -78,10 +80,12 @@ def mark_guard(guard: GuardLocation, lab_map: list[str]) -> list[str]:
   lab_map[guard.y] = tmp
   return lab_map
 
+
 def debug_map(lab_map: list[str]):
   for row in lab_map:
     print(row)
   print()
+
 
 def has_block(x: int, y: int, lab_map: list[str]) -> bool:
   if is_outside(x, y, lab_map):
@@ -90,8 +94,23 @@ def has_block(x: int, y: int, lab_map: list[str]) -> bool:
   # print(f' row {row}')
   return y < len(row) and row[x] == '#'
 
+
 def is_outside(x: int, y: int, lab_map: list[str]) -> bool:
-  return x < 0 or x >= len(lab_map[0]) or y  < 0 or y >= len(lab_map)
+  return x < 0 or x >= len(lab_map[0]) or y < 0 or y >= len(lab_map)
+
+
+def move_guard_max_steps(guard: GuardLocation, lab_map: list[str],
+                         max_steps: int) -> (GuardLocation | None):
+  steps = 0
+  while not is_outside(guard.x, guard.y, inputs) and steps < max_steps:
+    guard = guard.move(inputs)
+    steps += 1
+    if not is_outside(guard.x, guard.y, inputs):
+      mark_guard(guard, inputs)
+    else:
+      return guard
+  return guard
+
 
 def count_unique_visits(lab_map: list[str]) -> int:
   count = 0
@@ -101,19 +120,24 @@ def count_unique_visits(lab_map: list[str]) -> int:
         count += 1
   return count
 
+
 ####
 # Main
 ####
-inputs = readlines('input6.txt')
-
+inputs = readlines('sample.txt')
+original_input = inputs.copy()
 guard = find_guard(inputs)
+if guard is None:
+  print('No guard found')
+  exit()
+
 mark_guard(guard, inputs)
 
-while not is_outside(guard.x, guard.y, inputs):
-  guard = guard.move(inputs)
-  if not is_outside(guard.x, guard.y, inputs):
-    mark_guard(guard, inputs)
-#debug_map(inputs)
-
+guard = move_guard_max_steps(guard, inputs, len(inputs) * len(inputs[0]))
+if guard is None:
+  print('Ended moves with no guard')
+  exit()
+print(f'Final guard at {guard.x}, {guard.y} facing {guard.direction}')
 count = count_unique_visits(inputs)
 print(f'Part 1: {count}')
+
