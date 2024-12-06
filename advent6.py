@@ -26,7 +26,7 @@ class GuardLocation:
         if has_block(self.x, self.y + 1, lab_map):
           self.direction = Direction.EAST
         else:
-          self.y += 1
+          self.y -= 1
           has_moved = True
       elif self.direction == Direction.EAST:
         if has_block(self.x + 1, self.y, lab_map):
@@ -38,7 +38,7 @@ class GuardLocation:
         if has_block(self.x, self.y - 1, lab_map):
           self.direction = Direction.WEST
         else:
-          self.y -= 1
+          self.y += 1
           has_moved = True
       else:
         if has_block(self.x - 1, self.y, lab_map):
@@ -88,16 +88,18 @@ def is_outside(x, y, lab_map):
 inputs = ['....#.....', '.#..^.....']  #readlines('input5.txt')
 
 guard = GuardLocation(0, 0, Direction.EAST).move(['..'])
-print(f'New guard: {guard}')
+print(f'New guard: {guard}') # expect (1,0) EAST
 test = is_outside(guard.x, guard.y, ['..#'])
 print(f'  Is outside: {test}')
 test = is_outside(guard.x, guard.y, ['.'])
 print(f'  Is outside: {test}')
-guard = guard.move(['..#'])
+
+guard = guard.move(['..#']) # Expect (1,-1) SOUTH
 print(f'New guard: {guard}')
 test = is_outside(guard.x, guard.y, ['.'])
 print(f'  Is outside: {test}')
 
-guard = GuardLocation(1, 0, Direction.WEST).move(['#.'])
+# Expect (1, -1) NORTH
+guard = GuardLocation(1, 0, Direction.WEST).move(['#.']) 
 print(f'New guard: {guard}')
 
