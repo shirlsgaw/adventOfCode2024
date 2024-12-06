@@ -65,9 +65,12 @@ def find_guard(lab_map):
 
 
 def has_block(x, y, lab_map):
-  row = lab_map[x]
-  return y < len(row) and row[y] == '#'
+  row = lab_map[y]
+  print(f'row {row}')
+  return y < len(row) and row[x] == '#'
 
+def is_outside(location, lab_map):
+  return location.x < 0 or location.x >= len(lab_map[0]) or location.y  < 0 or location.y >= len(lab_map)
 
 ####
 # Main
@@ -88,9 +91,9 @@ print(f'Has block: {test}')
 test = has_block(0, 0, ['..', '.#'])
 print(f'Has block: {test}')
 
-guard = GuardLocation(0, 0, Direction.EAST).move('..')
+guard = GuardLocation(0, 0, Direction.EAST).move(['..'])
 print(f'New guard: {guard}')
-guard = guard.move('..#')
+guard = guard.move(['..#'])
 print(f'New guard: {guard}')
-guard = GuardLocation(1, 0, Direction.WEST).move('#.')
+guard = GuardLocation(1, 0, Direction.WEST).move(['#.'])
 print(f'New guard: {guard}')
