@@ -104,7 +104,7 @@ def count_unique_visits(lab_map) -> int:
 ####
 # Main
 ####
-inputs = readlines('sample.txt')
+inputs = readlines('input6.txt')
 
 guard = find_guard(inputs)
 mark_guard(guard, inputs)
@@ -113,7 +113,7 @@ while not is_outside(guard.x, guard.y, inputs):
   guard = guard.move(inputs)
   if not is_outside(guard.x, guard.y, inputs):
     mark_guard(guard, inputs)
-debug_map(inputs)
+#debug_map(inputs)
 
 count = count_unique_visits(inputs)
 print(f'Part 1: {count}')
