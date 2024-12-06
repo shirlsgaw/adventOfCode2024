@@ -21,9 +21,9 @@ class GuardLocation:
   def move(self, lab_map) -> Self:
     has_moved = False
     while not has_moved and not is_outside(self.x, self.y, lab_map):
-      print(self)
+      #print(self)
       if self.direction == Direction.NORTH:
-        if has_block(self.x, self.y + 1, lab_map):
+        if has_block(self.x, self.y - 1, lab_map):
           self.direction = Direction.EAST
         else:
           self.y -= 1
@@ -35,7 +35,7 @@ class GuardLocation:
           self.x += 1
           has_moved = True
       elif self.direction == Direction.SOUTH:
-        if has_block(self.x, self.y - 1, lab_map):
+        if has_block(self.x, self.y + 1, lab_map):
           self.direction = Direction.WEST
         else:
           self.y += 1
@@ -60,23 +60,33 @@ def find_guard(lab_map):
     row = lab_map[row_index]
     guard_index = row.find('^')
     if (guard_index > -1):
-      return (row_index, guard_index, Direction.NORTH)
+      return GuardLocation(guard_index, row_index, Direction.NORTH)
     guard_index = row.find('>')
     if (guard_index > -1):
-      return (row_index, guard_index, Direction.EAST)
+      return GuardLocation(guard_index, row_index, Direction.EAST)
     guard_index = row.find('v')
     if (guard_index > -1):
-      return (row_index, guard_index, Direction.SOUTH)
+      return GuardLocation(guard_index, row_index, Direction.SOUTH)
     guard_index = row.find('<')
     if (guard_index > -1):
-      return (guard_index, row_index, Direction.WEST)
+      return GuardLocation(row_index, guard_index, Direction.WEST)
 
+def mark_guard(guard, lab_map):
+  row = lab_map[guard.y]
+  tmp = row[0:guard.x] + 'X' + row[guard.x + 1:]
+  lab_map[guard.y] = tmp
+  return lab_map
+
+def debug_map(lab_map):
+  for row in lab_map:
+    print(row)
+  print()
 
 def has_block(x, y, lab_map):
   if is_outside(x, y, lab_map):
     return False
   row = lab_map[y]
-  print(f' row {row}')
+  # print(f' row {row}')
   return y < len(row) and row[x] == '#'
 
 def is_outside(x, y, lab_map):
@@ -85,21 +95,14 @@ def is_outside(x, y, lab_map):
 ####
 # Main
 ####
-inputs = ['....#.....', '.#..^.....']  #readlines('input5.txt')
+inputs = readlines('sample.txt')
 
-guard = GuardLocation(0, 0, Direction.EAST).move(['..'])
-print(f'New guard: {guard}') # expect (1,0) EAST
-test = is_outside(guard.x, guard.y, ['..#'])
-print(f'  Is outside: {test}')
-test = is_outside(guard.x, guard.y, ['.'])
-print(f'  Is outside: {test}')
+guard = find_guard(inputs)
+mark_guard(guard, inputs)
 
-guard = guard.move(['..#']) # Expect (1,-1) SOUTH
-print(f'New guard: {guard}')
-test = is_outside(guard.x, guard.y, ['.'])
-print(f'  Is outside: {test}')
-
-# Expect (1, -1) NORTH
-guard = GuardLocation(1, 0, Direction.WEST).move(['#.']) 
-print(f'New guard: {guard}')
+while not is_outside(guard.x, guard.y, inputs):
+  guard = guard.move(inputs)
+  if not is_outside(guard.x, guard.y, inputs):
+    mark_guard(guard, inputs)
+    debug_map(inputs)
 
