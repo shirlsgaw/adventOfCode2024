@@ -11,7 +11,7 @@ class GuardLocation:
   y = 0
   direction = Direction.NORTH
 
-  def __init__(self, x, y, direction):
+  def __init__(self, x:int, y:int, direction: Direction):
     self.x = x
     self.y = y
     self.direction = direction
@@ -19,7 +19,7 @@ class GuardLocation:
   def __str__(self) -> str:
     return f'Guard at {self.x}, {self.y} facing {self.direction}'
 
-  def move(self, lab_map) -> Self:
+  def move(self, lab_map: list[str]) -> Self:
     has_moved = False
     while not has_moved and not is_outside(self.x, self.y, lab_map):
       #print(self)
@@ -50,13 +50,13 @@ class GuardLocation:
       
     return self
 
-def readlines(source):
+def readlines(source: str) -> list[str]:
   with open(source, "r") as f:
     lines = f.readlines()
     return list(map(lambda x: x.rstrip(), lines))
 
 
-def find_guard(lab_map):
+def find_guard(lab_map: list[str]):
   for row_index in range(0, len(lab_map)):
     row = lab_map[row_index]
     guard_index = row.find('^')
@@ -72,28 +72,28 @@ def find_guard(lab_map):
     if (guard_index > -1):
       return GuardLocation(row_index, guard_index, Direction.WEST)
 
-def mark_guard(guard, lab_map):
+def mark_guard(guard: GuardLocation, lab_map: list[str]) -> list[str]:
   row = lab_map[guard.y]
   tmp = row[0:guard.x] + 'X' + row[guard.x + 1:]
   lab_map[guard.y] = tmp
   return lab_map
 
-def debug_map(lab_map):
+def debug_map(lab_map: list[str]):
   for row in lab_map:
     print(row)
   print()
 
-def has_block(x, y, lab_map):
+def has_block(x: int, y: int, lab_map: list[str]) -> bool:
   if is_outside(x, y, lab_map):
     return False
   row = lab_map[y]
   # print(f' row {row}')
   return y < len(row) and row[x] == '#'
 
-def is_outside(x, y, lab_map):
+def is_outside(x: int, y: int, lab_map: list[str]) -> bool:
   return x < 0 or x >= len(lab_map[0]) or y  < 0 or y >= len(lab_map)
 
-def count_unique_visits(lab_map) -> int:
+def count_unique_visits(lab_map: list[str]) -> int:
   count = 0
   for row in lab_map:
     for c in row:
