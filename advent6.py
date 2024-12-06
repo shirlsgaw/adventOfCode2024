@@ -1,4 +1,5 @@
 from enum import Enum
+from os import cpu_count
 from typing import Self
 
 Direction = Enum('Direction', [('NORTH', 1), ('EAST', 2), ('SOUTH', 3),
@@ -92,6 +93,14 @@ def has_block(x, y, lab_map):
 def is_outside(x, y, lab_map):
   return x < 0 or x >= len(lab_map[0]) or y  < 0 or y >= len(lab_map)
 
+def count_unique_visits(lab_map) -> int:
+  count = 0
+  for row in lab_map:
+    for c in row:
+      if c == 'X':
+        count += 1
+  return count
+
 ####
 # Main
 ####
@@ -104,5 +113,7 @@ while not is_outside(guard.x, guard.y, inputs):
   guard = guard.move(inputs)
   if not is_outside(guard.x, guard.y, inputs):
     mark_guard(guard, inputs)
-    debug_map(inputs)
+debug_map(inputs)
 
+count = count_unique_visits(inputs)
+print(f'Part 1: {count}')
