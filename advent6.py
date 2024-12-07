@@ -161,7 +161,7 @@ def is_valid_obstruction(obstruction: tuple[int,int],
 ####
 # Main
 ####
-inputs = readlines('input6.txt')
+inputs = readlines('sample.txt')
 original_input = inputs.copy()
 guard = find_guard(inputs)
 original_guard = GuardLocation(guard.x, guard.y, guard.direction)
@@ -175,21 +175,23 @@ count = count_unique_visits(inputs)
 print(f'Part 1: count={count}, steps={orig_steps}')
 #debug_map(inputs)
 obstructions = set()
+candidates = list()
+# Find all of the original visited locations, these are potential areas to block
+for row_index in range(0, len(inputs)):
+  for column_index in range(0, len(inputs[0])):
+    if inputs[row_index][column_index] == 'X':
+      candidates.append((column_index, row_index))
 inputs = original_input.copy()
-for steps in range(4, orig_steps):
+for (cadidate_x, candidate_y) in candidates:
   guard = GuardLocation(original_guard.x, original_guard.y,
                         original_guard.direction)
-#  mark_guard(guard, inputs)
-  move_guard_max_steps(guard, inputs, steps)
-  (next, _) = get_next_move(guard, inputs)
-  is_inside = not is_outside(next.x, next.y, inputs)
-  not_origin = next.x != original_guard.x or next.y != original_guard.y
-  if is_inside and not_origin:
+  not_origin = cadidate_x != original_guard.x or candidate_y != original_guard.y
+  if not_origin:
     # Replay the scenario with a test barrier
     inputs = original_input.copy()
     guard = GuardLocation(original_guard.x, original_guard.y,
                           original_guard.direction)
-    if is_valid_obstruction((next.x, next.y), guard, inputs):
-      obstructions.add((next.x, next.y))
+    if is_valid_obstruction((cadidate_x, candidate_y), guard, inputs):
+      obstructions.add((cadidate_x, candidate_y))
       
 print(f'Part 2: count={len(obstructions)}')
