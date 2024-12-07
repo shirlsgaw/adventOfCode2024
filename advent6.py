@@ -135,7 +135,7 @@ def count_unique_visits(lab_map: list[str]) -> int:
 def is_valid_obstruction(obstruction: tuple[int,int], 
                          guard: GuardLocation, 
                          lab_map: list[str]) -> bool:
-  mark_guard(guard, inputs)
+  #mark_guard(guard, inputs)
   mark_guard(GuardLocation(obstruction[0], obstruction[1], Direction.NORTH), 
              inputs, 
              mark_char='O')  # Add test barrier in original path
@@ -148,19 +148,20 @@ def is_valid_obstruction(obstruction: tuple[int,int],
     (next, found_obstruction) = get_next_move(guard, inputs)    
     if found_obstruction:
       obstruction_hits += 1
-    if is_outside(next.x, next.y, inputs):
-      print(' Going outside')
-    else:
-      mark_guard(next, inputs)
+    if not is_outside(next.x, next.y, inputs):
+      pass
+      #mark_guard(next, inputs)
     guard = next
     replay_steps += 1
-  print(f' Replay: {replay_steps}, obstruction hits: {obstruction_hits}, guard: {guard}')
+  mark_guard(GuardLocation(obstruction[0], obstruction[1], Direction.NORTH), 
+     inputs, 
+     mark_char='.')  # Reset
   return obstruction_hits >= 2
 
 ####
 # Main
 ####
-inputs = readlines('sample.txt')
+inputs = readlines('input6.txt')
 original_input = inputs.copy()
 guard = find_guard(inputs)
 original_guard = GuardLocation(guard.x, guard.y, guard.direction)
@@ -172,20 +173,17 @@ mark_guard(guard, inputs)
 print(f'Final guard at {guard.x}, {guard.y} facing {guard.direction}')
 count = count_unique_visits(inputs)
 print(f'Part 1: count={count}, steps={orig_steps}')
-debug_map(inputs)
+#debug_map(inputs)
 obstructions = set()
+inputs = original_input.copy()
 for steps in range(4, orig_steps):
-  print(f'===Steps: {steps}')
-  inputs = original_input.copy()
   guard = GuardLocation(original_guard.x, original_guard.y,
                         original_guard.direction)
-  mark_guard(guard, inputs)
+#  mark_guard(guard, inputs)
   move_guard_max_steps(guard, inputs, steps)
   (next, _) = get_next_move(guard, inputs)
   is_inside = not is_outside(next.x, next.y, inputs)
   not_origin = next.x != original_guard.x or next.y != original_guard.y
-  if not not_origin:
-    print('  Guard moved to original location')
   if is_inside and not_origin:
     # Replay the scenario with a test barrier
     inputs = original_input.copy()
@@ -193,9 +191,5 @@ for steps in range(4, orig_steps):
                           original_guard.direction)
     if is_valid_obstruction((next.x, next.y), guard, inputs):
       obstructions.add((next.x, next.y))
-      debug_map(inputs)
-      print(f'  Available_obstructions: {len(obstructions)}')
-    else:
-      print(f'  Invalid obstruction')
       
 print(f'Part 2: count={len(obstructions)}')
