@@ -42,26 +42,28 @@ def find_antipodes(
   for antenna, locations in antennas.items():
     if antenna not in antipodes:
       antipodes[antenna] = list()
-    print(f'Antenna: {antenna}: {locations}')
+    #print(f'Antenna: {antenna}: {locations}')
     for first_index in range(0, len(locations)):
       first_x, first_y = locations[first_index]
       for second_index in range(first_index + 1, len(locations)):
         second_x, second_y = locations[second_index]
         delta_x = second_x - first_x
         delta_y = second_y - first_y
-        print(f'  Delta: {delta_x}, {delta_y}')
+        #print(f'  Delta: {delta_x}, {delta_y}')
 
         antipode1 = (first_x - delta_x, first_y - delta_y)
         antipode2 = (second_x + delta_x, second_y + delta_y)
 
         if is_outside(antipode1[0], antipode1[1], location_map):
-          print(f'Antipode 1: {antipode1} is outside')
+          #print(f'Antipode 1: {antipode1} is outside')
+          pass
         else:
           mark(antipode1[0], antipode1[1], location_map, mark_char='#')
           antipodes[antenna].append(antipode1)
 
         if is_outside(antipode2[0], antipode2[1], location_map):
-          print(f'Antipode 2: {antipode2} is outside')
+          #print(f'Antipode 2: {antipode2} is outside')
+          pass
         else:
           mark(antipode2[0], antipode2[1], location_map, mark_char='#')
           antipodes[antenna].append(antipode2)
@@ -80,11 +82,11 @@ def count_antipodes(antipodes: dict[str, list[tuple[int, int]]]) -> int:
 ####
 # Main
 ####
-inputs = readlines('sample.txt')
+inputs = readlines('input8.txt')
 ants = find_antennas(inputs)
-print(ants)
+#print(ants)
 antipodes = find_antipodes(inputs, ants)
-print(antipodes)
-debug_map(inputs)
+#print(antipodes)
+#debug_map(inputs)
 
 print(f'Part 1: {count_antipodes(antipodes)}')
