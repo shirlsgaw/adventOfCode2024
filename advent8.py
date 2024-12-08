@@ -47,26 +47,27 @@ def find_antipodes(
       first_x, first_y = locations[first_index]
       for second_index in range(first_index + 1, len(locations)):
         second_x, second_y = locations[second_index]
+
+        # Pair of antennas should also count as antipodes
+        antipodes[antenna].append((first_x, first_y))
+        antipodes[antenna].append((second_x, second_y))
+        
         delta_x = second_x - first_x
         delta_y = second_y - first_y
         #print(f'  Delta: {delta_x}, {delta_y}')
 
         antipode1 = (first_x - delta_x, first_y - delta_y)
-        antipode2 = (second_x + delta_x, second_y + delta_y)
 
-        if is_outside(antipode1[0], antipode1[1], location_map):
-          #print(f'Antipode 1: {antipode1} is outside')
-          pass
-        else:
+        while not is_outside(antipode1[0], antipode1[1], location_map):
           mark(antipode1[0], antipode1[1], location_map, mark_char='#')
           antipodes[antenna].append(antipode1)
+          antipode1 = (antipode1[0] - delta_x, antipode1[1] - delta_y)
 
-        if is_outside(antipode2[0], antipode2[1], location_map):
-          #print(f'Antipode 2: {antipode2} is outside')
-          pass
-        else:
+        antipode2 = (second_x + delta_x, second_y + delta_y)
+        while not is_outside(antipode2[0], antipode2[1], location_map):
           mark(antipode2[0], antipode2[1], location_map, mark_char='#')
           antipodes[antenna].append(antipode2)
+          antipode2 = (antipode2[0] + delta_x, antipode2[1] + delta_y)
 
   return antipodes
 
