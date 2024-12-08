@@ -114,7 +114,7 @@ def walk_guard(guard, lab_map, visit_count_map, max_steps, do_mark=True):
 ####
 # Main
 ####
-inputs = readlines('sample.txt')
+inputs = readlines('input6.txt')
 original_inputs = inputs.copy()
 
 guard = find_guard(inputs)
