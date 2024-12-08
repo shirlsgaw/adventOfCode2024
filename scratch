@@ -1,0 +1,18 @@
+ inputs: 8512: [8, 920, 25, 272, 855]
+ -find_operations(7657, [8, 920, 25, 272])
+ inputs: 7657: [8, 920, 25, 272]
+ -find_operations(7385, [8, 920, 25])
+ inputs: 7385: [8, 920, 25]
+ -find_operations(7360, [8, 920])
+ inputs: 7360: [8, 920]
+   recurse add 7385=8*920+25
+ /find_operations(7360, [8, 920])
+   recurse multiply 7385=None*25
+   recurse add 7657=8*920+25+272
+ /find_operations(7385, [8, 920])
+   recurse multiply 7657=None*272
+   recurse add 8512=8*920+25+272+855
+ /find_operations(7657, [8, 920, 25])
+   recurse multiply 8512=None*855
+8*920+25+272+855
+Part 1: 0

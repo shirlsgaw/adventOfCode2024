@@ -8,6 +8,7 @@ def readlines(source):
 
 
 def find_operations(total, values):
+  print(f' inputs: {total}: {values}')
   if len(values) < 2:
     raise AssertionError(f'Not enough values: {values}')
   # Base case
@@ -20,18 +21,23 @@ def find_operations(total, values):
   else:
     last = values.pop()
     sub_total = total - last
-    div_total = total / last
-    if sub_total >= 0:
-      result = find_operations(sub_total, values)
-      #print(f' recurse add {total}={result}+{last}')
-      if result is not None:
-        return f'{result}+{last}'
+    div_total = int(total / last)
+    
+    add_result = find_operations(sub_total, values.copy())
+    print(f'   recurse add {total}={add_result}+{last}')
+
     if total % last == 0:
-      result = find_operations(div_total, values)
-      #print(f' recurse multiply {total}={result}*{last}')
-      if result is None:
-        return None
-      return f'{result}*{last}'
+      multiply_result = find_operations(div_total, values.copy())
+      #print(f'   recurse multiply {total}={multiply_result}*{last}')
+    else:
+      multiply_result = None
+      #print(f'   skip recurse multiply {total} != {div_total} * {last}')
+    
+
+    if add_result is not None:
+      return f'{add_result}+{last}'
+    if multiply_result is not None:
+      return f'{multiply_result}*{last}'
     return None
 
 
@@ -62,12 +68,21 @@ for row in inputs:
 #print(find_operations(7290, [6, 8, 6, 15]))
 #print(find_operations(292, [11,6,16,20]))
 #print(find_operations(272, [11, 6, 16]))
+#print(find_operations(663936, [8, 920, 25, 272, 855, 78]))
+#print(find_operations(8512, [8, 920, 25, 272, 855]))
+#print(find_operations(36, [1, 2, 3, 4]))
 
 part1_total = 0
 for i in range(0, len(totals_list)):
-  result = find_operations(totals_list[i], operands_list[i])
+  result = find_operations(totals_list[i], operands_list[i].copy())
   if result is None:
-    print(f' Failed for {totals_list[i]}')
+    multiply_all = 1
+    for y in operands_list[i]:
+      print(y)
+      multiply_all *= y
+    print(
+        f' Failed for {totals_list[i]}, debug multiply_all={multiply_all}, operands={operands_list[i]}'
+    )
   else:
     print(f' Success: {totals_list[i]} = {result}')
     part1_total += totals_list[i]
