@@ -1,6 +1,3 @@
-from enum import Enum
-
-
 def readlines(source):
   with open(source, "r") as f:
     lines = f.readlines()
@@ -13,12 +10,27 @@ def mark(x: int, y: int, location_map: list[str], mark_char='X'):
   location_map[y] = tmp
 
 
-def expand(input: str) -> str:
-  return 'foobar'
+def expand(input: str) -> list[str]:
+  file_id = 0
+  result = list()
+  index = 0
+  while index < len(input):
+    reps = input[index]
+    for r in range(0, int(reps)):
+      result.append(str(file_id))
+    index += 1
+    if index < len(input):
+      spaces = input[index]
+      for s in range(0, int(spaces)):
+        result.append('.')
+      index += 1
+    file_id += 1
+
+  return result
 
 
-def compact(input: str) -> str:
-  result = input
+def compact(input: list[str]) -> list[str]:
+  result = input.copy()
   i = 0
   j = len(result) - 1
   while i < j:
@@ -29,17 +41,15 @@ def compact(input: str) -> str:
 
     if i < j:
       tmp = result[i]
-      input_l = [result]
-      mark(i, 0, input_l, mark_char=result[j])
-      mark(j, 0, input_l, mark_char=tmp)
-      result = input_l[0]
+      result[i] = result[j]
+      result[j] = tmp
   return result
 
 
-def generate_check_sum(input: str) -> int:
+def generate_check_sum(input: list[str]) -> int:
   check_sum = 0
   for i in range(0, len(input)):
-    if input[i].isdigit():
+    if input[i] != '.':
       check_sum += i * int(input[i])
   return check_sum
 
@@ -48,13 +58,13 @@ def generate_check_sum(input: str) -> int:
 # Main
 ####
 disk_map = readlines('input9.txt')
-print('number of lines: ' + str(len(disk_map)))
 
 disk = expand(disk_map[0])
-print(disk)
+pretty = ''.join(disk)
+#print(pretty)
 
-disk = compact('0..1.3.')
-print(disk)
+disk = compact(disk)
+#print(disk)
 
-check_sum = generate_check_sum('13..5..')
+check_sum = generate_check_sum(disk)
 print(check_sum)
