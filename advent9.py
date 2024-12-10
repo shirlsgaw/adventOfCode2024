@@ -134,6 +134,13 @@ def generate_check_sum(input: list[str]) -> int:
       check_sum += i * int(input[i])
   return check_sum
 
+def generate_check_sum2(input: str) -> int:
+  check_sum = 0
+  for i in range(0, len(input)):
+    if not input[i].startswith('.'):
+      check_sum += i * int(input[i])
+  return check_sum
+
 
 ####
 # Main
@@ -163,5 +170,6 @@ for (_, block) in disk2:
   if len(block) > 0:
     output.append(block)
 print('Part 2: ' + ''.join(output))
-check_sum = generate_check_sum(output)
+
+check_sum = generate_check_sum2(''.join(output))
 print(check_sum)
