@@ -95,10 +95,10 @@ def compact2(input: list[tuple[int, str]]) -> list[tuple[int, str]]:
 
   # Process blocks from back to front, passing spaces
   while len(todo) > 0:
-    print(f' todo {todo}')
+    #print(f' todo {todo}')
     output = result_stack.copy()
     output.reverse()
-    print(f' output {output}')
+    #print(f' output {output}')
 
     (tmp_length, tmp_block) = todo.pop()
 
@@ -108,16 +108,16 @@ def compact2(input: list[tuple[int, str]]) -> list[tuple[int, str]]:
       (tmp_length, tmp_block) = todo.pop()
 
     # Process block
-    print(f'*Block: {tmp_block}, {tmp_length}')
+    #print(f'*Block: {tmp_block}, {tmp_length}')
     space_index = first_space_index(tmp_length, todo)
     if space_index == -1:
-      print(f'--not found adding to stack ({tmp_length},{tmp_block})')
+      #print(f'--not found adding to stack ({tmp_length},{tmp_block})')
       result_stack.append((tmp_length, tmp_block))
     else:
       (space_length, space_block) = todo[space_index]
       prefix = space_block[:tmp_length]
       suffix = space_block[tmp_length:]
-      print(f'++Prefix: {prefix}, Suffix: {suffix}')
+      #print(f'++Prefix: {prefix}, Suffix: {suffix}')
       result_stack.append((len(prefix), prefix))
       todo[space_index] = (tmp_length, tmp_block)
       if len(suffix) > 0:
@@ -130,7 +130,7 @@ def compact2(input: list[tuple[int, str]]) -> list[tuple[int, str]]:
 def generate_check_sum(input: list[str]) -> int:
   check_sum = 0
   for i in range(0, len(input)):
-    if input[i] != '.':
+    if not input[i].startswith('.'):
       check_sum += i * int(input[i])
   return check_sum
 
@@ -147,7 +147,7 @@ disk = compact(disk)
 check_sum = generate_check_sum(disk)
 print(f'Part 1 checksum: {check_sum}')
 
-disk2 = expand2(disk_map[0])
+disk2 = expand2('2333133121414131402')
 output = ''
 for (_, block) in disk2:
   output += block
@@ -157,6 +157,11 @@ for (_, block) in disk2:
 #disk2 = compact2(disk2)
 #print(disk2)
 
-disk2 = [(3, 'aaa'), (5, '.....'), (5, 'bbbbb'), (2, 'xx'), (1, 'y')]
 disk2 = compact2(disk2)
-print(disk2)
+output = list[str]()
+for (_, block) in disk2:
+  if len(block) > 0:
+    output.append(block)
+print('Part 2: ' + ''.join(output))
+check_sum = generate_check_sum(output)
+print(check_sum)
