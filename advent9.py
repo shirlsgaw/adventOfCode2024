@@ -37,7 +37,7 @@ def expand2(input: str) -> list[tuple[int, str]]:
     reps = input[index]
     block = ''
     for r in range(0, int(reps)):
-      block += str(file_id)
+      block += str(file_id) + '-'
     result.append((int(reps), block))
     file_id += 1
 
@@ -134,13 +134,6 @@ def generate_check_sum(input: list[str]) -> int:
       check_sum += i * int(input[i])
   return check_sum
 
-def generate_check_sum2(input: str) -> int:
-  check_sum = 0
-  for i in range(0, len(input)):
-    if not input[i].startswith('.'):
-      check_sum += i * int(input[i])
-  return check_sum
-
 
 ####
 # Main
@@ -149,27 +142,36 @@ disk_map = readlines('input9.txt')
 
 disk = expand(disk_map[0])
 pretty = ''.join(disk)
-
+#print(pretty)
 disk = compact(disk)
 check_sum = generate_check_sum(disk)
 print(f'Part 1 checksum: {check_sum}')
 
-disk2 = expand2('2333133121414131402')
+disk2 = expand2(disk_map[0])
 output = ''
 for (_, block) in disk2:
   output += block
-#print(f'Part 1 expand equals part 2: {pretty == output}')
 
 #disk2 = [(3, 'aaa'), (5, '.....'), (5, 'bbbbb'), (2, 'xx')]
 #disk2 = compact2(disk2)
 #print(disk2)
+#print(output)
 
 disk2 = compact2(disk2)
+#print(disk2)
 output = list[str]()
+output_list = list[str]()
 for (_, block) in disk2:
-  if len(block) > 0:
-    output.append(block)
-print('Part 2: ' + ''.join(output))
-
-check_sum = generate_check_sum2(''.join(output))
-print(check_sum)
+  if block.startswith('.'):
+    for c in block:
+      output_list.append(c)
+  else:
+    for n in block.split('-'):
+      if len(n) > 0:
+        output_list.append(n)
+#print(''.join(output_list))
+check_sum2 = generate_check_sum(output_list)
+print(check_sum2)
+#print(f'Part 2 checksum: {check_sum2} < {check_sum}: {check_sum2 < check_sum}')
+# Part 2 checksum: 33075 < 34324: True
+#                  40356
