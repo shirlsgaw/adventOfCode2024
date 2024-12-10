@@ -73,7 +73,7 @@ def first_space_index(target_length: int, input: list[tuple[int, str]]) -> int:
   index = 0
   while index < len(input):
     (tmp_length, tmp_block) = input[index]
-    if tmp_block.startswith('.') and tmp_length == target_length:
+    if tmp_block.startswith('.') and target_length <= tmp_length:
       return index
     index += 1
   return -1
@@ -89,19 +89,42 @@ def first_block_index(start_at: int, input: list[tuple[int, str]]) -> int:
   return index
 
 
-def compact2(input: list[tuple[int, str]]):
-  block_index = first_block_index(len(input) - 1, input)
-  while block_index >= 0:
-    (tmp_length, tmp_block) = input[block_index]
-    space_index = first_space_index(tmp_length, input)
-    if space_index < block_index:
-      tmp = input[space_index]
-      input[space_index] = input[block_index]
-      input[block_index] = tmp
+def compact2(input: list[tuple[int, str]]) -> list[tuple[int, str]]:
+  result_stack = list[tuple[int, str]]()
+  todo = input.copy()
 
-    # Move to the next block
-    block_index -= 1
-    block_index = first_block_index(block_index, input)
+  # Process blocks from back to front, passing spaces
+  while len(todo) > 0:
+    print(f' todo {todo}')
+    output = result_stack.copy()
+    output.reverse()
+    print(f' output {output}')
+
+    (tmp_length, tmp_block) = todo.pop()
+
+    # Pass through spaces
+    while tmp_block.startswith('.'):
+      result_stack.append((tmp_length, tmp_block))
+      (tmp_length, tmp_block) = todo.pop()
+
+    # Process block
+    print(f'*Block: {tmp_block}, {tmp_length}')
+    space_index = first_space_index(tmp_length, todo)
+    if space_index == -1:
+      print(f'--not found adding to stack ({tmp_length},{tmp_block})')
+      result_stack.append((tmp_length, tmp_block))
+    else:
+      (space_length, space_block) = todo[space_index]
+      prefix = space_block[:tmp_length]
+      suffix = space_block[tmp_length:]
+      print(f'++Prefix: {prefix}, Suffix: {suffix}')
+      result_stack.append((len(prefix), prefix))
+      todo[space_index] = (tmp_length, tmp_block)
+      if len(suffix) > 0:
+        todo.insert(space_index + 1, (len(suffix), suffix))
+
+  result_stack.reverse()
+  return result_stack
 
 
 def generate_check_sum(input: list[str]) -> int:
@@ -122,7 +145,7 @@ pretty = ''.join(disk)
 
 disk = compact(disk)
 check_sum = generate_check_sum(disk)
-print(check_sum)
+print(f'Part 1 checksum: {check_sum}')
 
 disk2 = expand2(disk_map[0])
 output = ''
@@ -130,12 +153,10 @@ for (_, block) in disk2:
   output += block
 #print(f'Part 1 expand equals part 2: {pretty == output}')
 
-disk2 = [(3, 'aaa'), (5, '.....'), (5, 'bbbbb'), (1, 'a'), (3, '...')]
-print(first_block_index(len(disk2) - 1, disk2))
-print(first_block_index(2, disk2))
-print(first_block_index(1, disk2))
+#disk2 = [(3, 'aaa'), (5, '.....'), (5, 'bbbbb'), (2, 'xx')]
+#disk2 = compact2(disk2)
+#print(disk2)
 
-print(first_space_index(5, disk2))
-print(first_space_index(3, disk2))
-compact2(disk2)
+disk2 = [(3, 'aaa'), (5, '.....'), (5, 'bbbbb'), (2, 'xx'), (1, 'y')]
+disk2 = compact2(disk2)
 print(disk2)
