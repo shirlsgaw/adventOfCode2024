@@ -9,6 +9,7 @@ def readlines(source):
 def blink(stone: str, iteration: int, target_iterations: int) -> int:
   print(f'Blinking {stone} {iteration} of {target_iterations}')
   if iteration == target_iterations:
+    print()
     return 1
   if stone == '0':
     return blink('1', iteration + 1, target_iterations)
@@ -16,7 +17,7 @@ def blink(stone: str, iteration: int, target_iterations: int) -> int:
     new_len = int(len(stone) / 2)
     stone1 = stone[:new_len]
     stone2 = stone[new_len:]
-    return blink(stone1, iteration + 1, target_iterations) + blink(stone2, iteration + 1, target_iterations)
+    return blink(str(int(stone1)), iteration + 1, target_iterations) + blink(str(int(stone2)), iteration + 1, target_iterations)
   else:
     value = int(stone)
     return blink(str(value * 2024), iteration + 1, target_iterations)
@@ -24,13 +25,13 @@ def blink(stone: str, iteration: int, target_iterations: int) -> int:
 ####
 # Main
 ####
-input = readlines('hint.txt')
+input = readlines('sample.txt')
 stones = input[0].split(' ')
 print(stones)
 
 total = 0
 for stone in stones:
-  count = blink(stone, 0, 1)
+  count = blink(stone, 0, 6)
   total += count
 print(f'Part 1: {total}')
 
