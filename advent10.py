@@ -89,13 +89,13 @@ topo_map = readlines('hint.txt')
 
 
 sum = 0
-visited = set[tuple[int, int]]()
 # Find all 0 points
 for (x, y) in find_zeros(topo_map):
   nine_locations = set[tuple[int, int]]()
-  
+  visited = set[tuple[int, int]]()
+
   unexplored = list[tuple[int, int]]()
-  print(f'Trailhead: ({x}, {y})')
+  #print(f'Trailhead: ({x}, {y})')
   unexplored.append((x, y))
 
   while len(unexplored) > 0:
@@ -112,5 +112,6 @@ for (x, y) in find_zeros(topo_map):
       for hx, hy in get_horizon(curr_x, curr_y, topo_map, visited):
         unexplored.append((hx, hy))
         #print(f'...Horizon ({curr_x}, {curr_y}): ({hx}, {hy})')
+  print(f'Trailhead: ({x}, {y}): {len(nine_locations)}')
   sum += len(nine_locations)
 print('Part 1: ' + str(sum))
