@@ -85,7 +85,7 @@ def get_horizon(
 ####
 # Main
 ####
-topo_map = readlines('hint.txt')
+topo_map = readlines('input10.txt')
 
 
 sum = 0
