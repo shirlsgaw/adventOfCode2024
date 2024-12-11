@@ -1,4 +1,4 @@
-entrypoint = "advent10.py"
+entrypoint = "advent11.py"
 modules = ["python-3.11"]
 
 [nix]
