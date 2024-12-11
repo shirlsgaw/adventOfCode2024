@@ -19,20 +19,28 @@ def blink(stone: str, iteration: int, target_iterations: int) -> int:
     return blink(stone1, iteration + 1, target_iterations) + blink(stone2, iteration + 1, target_iterations)
   else:
     value = int(stone)
-    return blink(str(value * 2040), iteration + 1, target_iterations)
+    return blink(str(value * 2024), iteration + 1, target_iterations)
 
 ####
 # Main
 ####
-stones = readlines('input10.txt')
+input = readlines('hint.txt')
+stones = input[0].split(' ')
+print(stones)
 
-num_stones = blink('0', 0, 0)
-print(f'Part 1: {num_stones}')
-num_stones = blink('0', 0, 1)
-print(f'Part 1: {num_stones}')
-num_stones = blink('0', 0, 2)
-print(f'Part 1: {num_stones}')
-num_stones = blink('0', 0, 3)
-print(f'Part 1: {num_stones}')
-num_stones = blink('40', 0, 3)
-print(f'Part 1: {num_stones}')
+total = 0
+for stone in stones:
+  count = blink(stone, 0, 1)
+  total += count
+print(f'Part 1: {total}')
+
+#num_stones = blink('0', 0, 0)
+#print(f'Part 1: {num_stones}')
+#num_stones = blink('0', 0, 1)
+#print(f'Part 1: {num_stones}')
+#num_stones = blink('0', 0, 2)
+#print(f'Part 1: {num_stones}')
+#num_stones = blink('0', 0, 3)
+#print(f'Part 1: {num_stones}')
+#num_stones = blink('40', 0, 3)
+#print(f'Part 1: {num_stones}')
