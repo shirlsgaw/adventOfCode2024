@@ -10,7 +10,7 @@ def readlines(source):
 ####
 # Return all points with zeros as the value in the map
 ####
-def find_zeros(map: list[str]) -> Generator[tuple[int, int], None, None]:
+def find_trailheads(map: list[str]) -> Generator[tuple[int, int], None, None]:
   for y in range(0, len(map)):
     for x in range(0, len(map[0])):
       if map[y][x] == '0':
@@ -90,7 +90,7 @@ topo_map = readlines('hint.txt')
 
 sum = 0
 # Find all 0 points
-for (x, y) in find_zeros(topo_map):
+for (x, y) in find_trailheads(topo_map):
   nine_locations = set[tuple[int, int]]()
   visited = set[tuple[int, int]]()
 
