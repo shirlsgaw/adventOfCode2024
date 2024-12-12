@@ -48,72 +48,71 @@ def compute_perimeter(x: int, y: int, plots: list[str]) -> int:
     border_sides += 1
   return border_sides
 
-def get_region_id(x: int, y: int, plots: list[str], 
-                  ids_cache: list[list[int], list[int]], next_id: int) -> int:
-  # A region is new if it's northern neighbor AND western neighbor are different from the current location
-  value = plots[y][x]
 
+####
+# Find all points that are in the same region as (x, y)
+####
+explored = set[tuple[int, int]]()
+def get_region(x: int, y: int, plots: list[str]) -> Generator[tuple[int, int], None, None]:
+  if (x, y) in explored:
+    return None
+
+  value = plots[y][x]
+  explored.add((x, y))
+  yield (x, y)
   # North
-  prev_y = y - 1
-  prev_x = x
-  north_is_different = is_outside(prev_x, prev_y, plots) or value != plots[prev_y][prev_x]
-  
+  next_y = y - 1
+  next_x = x
+  if not is_outside(next_x, next_y, plots) and value == plots[next_y][next_x]:
+    yield from get_region(next_x, next_y, plots)
+
+  # East
+  next_y = y
+  next_x = x + 1
+  if not is_outside(next_x, next_y, plots) and value == plots[next_y][next_x]:
+    yield from get_region(next_x, next_y, plots)
+
+  # South
+  next_y = y + 1
+  next_x = x
+  if not is_outside(next_x, next_y, plots) and (next_x, next_y) not in explored and value == plots[next_y][next_x]:
+    yield from get_region(next_x, next_y, plots)
 
   # West
-  prev_y = y
-  prev_x = x - 1
-  west_is_different = is_outside(prev_x, prev_y, plots) or value != plots[prev_y][prev_x]
+  next_y = y
+  next_x = x - 1
+  if not is_outside(next_x, next_y, plots) and value == plots[next_y][next_x]:
+    yield from get_region(next_x, next_y, plots)
 
-  if north_is_different and west_is_different:
-    return next_id
-  elif north_is_different:
-    return ids_cache[y % 2][x - 1]
-  else:
-    return ids_cache[(y - 1) % 2][x]
-
-def compute_fencing(map: list[str]) -> int:
-  
-  areas = dict[int, int]()
-  perimeters = dict[int, int]()
-
-  # Track the last two rows of IDs
-  curr_id = -1
-  row_ids = list[list[int], list[int]]()
-  row_ids.append(list[int]())
-  row_ids.append(list[int]())
-
-  # Initialize list
-  for i in range(0, len(map)):
-    row_ids[0].append(-1)
-    row_ids[1].append(-1)
-  
-  for y in range(0, len(map)):
-    for x in range(0, len(map[0])):
-      region_id = get_region_id(x, y, map, row_ids, curr_id + 1)
-      row_ids[y % 2][x] = region_id
-      
-      if region_id > curr_id:
-        curr_id += 1
-        areas[region_id] = 1
-      else:
-        areas[region_id] += 1
-      print(f'.({map[y][x]}) ({x}, {y}): region id {region_id}, areas={areas[region_id]}')
-
-      perimeter = perimeters.get(region_id, 0)
+def compute_fencing(map: list[str], regions: list[list[tuple[int, int]]]) -> int:
+  cost = 0
+  for region in regions:
+    value = None
+    area = len(region)
+    perimeter = 0
+    for (x, y) in region:
+      value = map[y][x]
       perimeter += compute_perimeter(x, y, map)
-      perimeters[region_id] = perimeter
-      print(f'.. perimeter={perimeter}')
-
-  fencing_cost = 0
-  for id in areas:
-    fencing = areas[id] * perimeters[id]
-    print(f'Type {id}: {areas[id]} * {perimeters[id]} = {fencing}')
-    fencing_cost += fencing
-  return fencing_cost
+    fencing = area * perimeter
+    cost += fencing
+    
+    print(f'.({value}): {area} * {perimeter} = {fencing}')
+  return cost
 
 
 ####
 # Main
 ####
 map = readlines('sample.txt')
-print('Fencing cost: ' + str(compute_fencing(map)))
+regions = list(list[tuple[int, int]]())
+for y in range(0, len(map)):
+  for x in range(0, len(map[0])):
+    if (x, y) not in explored:
+      points = list[tuple[int, int]]()
+      for (px, py) in get_region(x, y, map):
+        points.append((px, py))
+      regions.append(points)
+      #print(f'Region ({map[y][x]}): {points}')
+
+fencing_cost = compute_fencing(map, regions)
+print(f'Part 1: {fencing_cost}')
