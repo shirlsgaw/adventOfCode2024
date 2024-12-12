@@ -1,4 +1,4 @@
-from collections.abc import Generator
+from functools import lru_cache
 
 
 def readlines(source):
@@ -6,32 +6,43 @@ def readlines(source):
     lines = f.readlines()
     return list(map(lambda x: x.rstrip(), lines))
 
+
+@lru_cache(maxsize=2048)
 def blink(stone: str, iteration: int, target_iterations: int) -> int:
-  print(f'Blinking {stone} {iteration} of {target_iterations}')
+  #print(f'Blinking {stone} {iteration} of {target_iterations}, stored_results={stored_results}')
   if iteration == target_iterations:
-    print()
+    #print()
     return 1
+
+  next_iter = iteration + 1
+
   if stone == '0':
-    return blink('1', iteration + 1, target_iterations)
+    result = blink('1', next_iter, target_iterations)
+    return result
   if len(stone) % 2 == 0:
     new_len = int(len(stone) / 2)
-    stone1 = stone[:new_len]
-    stone2 = stone[new_len:]
-    return blink(str(int(stone1)), iteration + 1, target_iterations) + blink(str(int(stone2)), iteration + 1, target_iterations)
+    stone1 = str(int(stone[:new_len]))
+    stone2 = str(int(stone[new_len:]))
+    result1 = blink(stone1, next_iter, target_iterations)
+    result2 = blink(stone2, next_iter, target_iterations)
+    return result1 + result2
   else:
     value = int(stone)
-    return blink(str(value * 2024), iteration + 1, target_iterations)
+    result = blink(str(value * 2024), next_iter, target_iterations)
+    return result
+
 
 ####
 # Main
 ####
-input = readlines('sample.txt')
+input = readlines('input11.txt')
 stones = input[0].split(' ')
 print(stones)
 
 total = 0
 for stone in stones:
-  count = blink(stone, 0, 6)
+  count = blink(stone, 0, 75)
+  #print(stored_results)
   total += count
 print(f'Part 1: {total}')
 
