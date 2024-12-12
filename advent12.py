@@ -48,32 +48,72 @@ def compute_perimeter(x: int, y: int, plots: list[str]) -> int:
     border_sides += 1
   return border_sides
 
+def get_region_id(x: int, y: int, plots: list[str], 
+                  ids_cache: list[list[int], list[int]], next_id: int) -> int:
+  # A region is new if it's northern neighbor AND western neighbor are different from the current location
+  value = plots[y][x]
+
+  # North
+  prev_y = y - 1
+  prev_x = x
+  north_is_different = is_outside(prev_x, prev_y, plots) or value != plots[prev_y][prev_x]
+  
+
+  # West
+  prev_y = y
+  prev_x = x - 1
+  west_is_different = is_outside(prev_x, prev_y, plots) or value != plots[prev_y][prev_x]
+
+  if north_is_different and west_is_different:
+    return next_id
+  elif north_is_different:
+    return ids_cache[y % 2][x - 1]
+  else:
+    return ids_cache[(y - 1) % 2][x]
 
 def compute_fencing(map: list[str]) -> int:
-  areas = dict[str, int]()
-  perimeters = dict[str, int]()
+  
+  areas = dict[int, int]()
+  perimeters = dict[int, int]()
 
+  # Track the last two rows of IDs
+  curr_id = -1
+  row_ids = list[list[int], list[int]]()
+  row_ids.append(list[int]())
+  row_ids.append(list[int]())
+
+  # Initialize list
+  for i in range(0, len(map)):
+    row_ids[0].append(-1)
+    row_ids[1].append(-1)
+  
   for y in range(0, len(map)):
     for x in range(0, len(map[0])):
-      type = map[y][x]
-      type_area = areas.get(type, 0)
-      type_area += 1
-      areas[type] = type_area
+      region_id = get_region_id(x, y, map, row_ids, curr_id + 1)
+      row_ids[y % 2][x] = region_id
+      
+      if region_id > curr_id:
+        curr_id += 1
+        areas[region_id] = 1
+      else:
+        areas[region_id] += 1
+      print(f'.({map[y][x]}) ({x}, {y}): region id {region_id}, areas={areas[region_id]}')
 
-      type_perimeter = perimeters.get(type, 0)
-      type_perimeter += compute_perimeter(x, y, map)
-      perimeters[type] = type_perimeter
+      perimeter = perimeters.get(region_id, 0)
+      perimeter += compute_perimeter(x, y, map)
+      perimeters[region_id] = perimeter
+      print(f'.. perimeter={perimeter}')
 
   fencing_cost = 0
-  for type in areas:
-    type_fencing = areas[type] * perimeters[type]
-    print(f'Type {type}: {type_fencing}')
-    fencing_cost += type_fencing
+  for id in areas:
+    fencing = areas[id] * perimeters[id]
+    print(f'Type {id}: {areas[id]} * {perimeters[id]} = {fencing}')
+    fencing_cost += fencing
   return fencing_cost
 
 
 ####
 # Main
 ####
-map = readlines('hint.txt')
+map = readlines('sample.txt')
 print('Fencing cost: ' + str(compute_fencing(map)))
