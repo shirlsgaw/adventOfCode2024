@@ -1,4 +1,5 @@
 from functools import lru_cache
+from collections import defaultdict
 
 
 def readlines(source):
@@ -7,28 +8,42 @@ def readlines(source):
     return list(map(lambda x: x.rstrip(), lines))
 
 
-@lru_cache(maxsize=2048)
+cache = defaultdict[tuple[str, int], int]()
+
+
 def blink(stone: str, iteration: int, target_iterations: int) -> int:
   #print(f'Blinking {stone} {iteration} of {target_iterations}, stored_results={stored_results}')
   if iteration == target_iterations:
-    #print()
     return 1
 
   next_iter = iteration + 1
 
   if stone == '0':
+    cached = cache.get(('0', iteration), None)
+    if cached is not None:
+      return cached
     result = blink('1', next_iter, target_iterations)
+    cache[('0', iteration)] = result
     return result
   if len(stone) % 2 == 0:
     new_len = int(len(stone) / 2)
     stone1 = str(int(stone[:new_len]))
     stone2 = str(int(stone[new_len:]))
+    cached = cache.get((stone, iteration), None)
+    if cached is not None:
+      return cached
     result1 = blink(stone1, next_iter, target_iterations)
     result2 = blink(stone2, next_iter, target_iterations)
-    return result1 + result2
+    result = result1 + result2
+    cache[(stone, iteration)] = result
+    return result
   else:
     value = int(stone)
+    cached = cache.get((stone, iteration), None)
+    if cached is not None:
+      return cached
     result = blink(str(value * 2024), next_iter, target_iterations)
+    cache[(stone, iteration)] = result
     return result
 
 
