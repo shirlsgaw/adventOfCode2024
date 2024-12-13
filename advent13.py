@@ -58,6 +58,25 @@ class Prize:
     return (self.x, self.y) == (other.x, other.y)
 
 
+####
+# Game
+####
+class Game:
+
+  def __init__(self, buttons: tuple[Button, Button], prize: Prize):
+    self.buttons = buttons
+    self.prize = prize
+
+  def __repr__(self):
+    return f"Game({self.buttons}, {self.prize})"
+
+  def __eq__(self, other):
+    return (self.buttons, self.prize) == (other.buttons, other.prize)
+
+
+####
+# readlines: reads input from file into lines of strings
+####
 def readlines(source):
   with open(source, "r") as f:
     lines = f.readlines()
@@ -65,20 +84,44 @@ def readlines(source):
 
 
 ####
-# Parses the input into Buttons and Prizes
+# Parses a string into Button or Prize
 ####
-def parse(input: list[str]) -> Generator[Union[Button, Prize], None, None]:
-  for line in input:
-    tmp = line.split(' ')
-    if tmp[0].startswith('Button'):
-      yield Button(label=tmp[1], x_label=tmp[2], y_label=tmp[3])
-    if tmp[0].startswith('Prize'):
-      yield Prize(x_label=tmp[1], y_label=tmp[2])
+def parse(line: str) -> Union[Button, Prize, None]:
+  tmp = line.split(' ')
+  if tmp[0].startswith('Button'):
+    return Button(label=tmp[1], x_label=tmp[2], y_label=tmp[3])
+  if tmp[0].startswith('Prize'):
+    return Prize(x_label=tmp[1], y_label=tmp[2])
+  return None
 
 
 ####
 # Main
 ####
 input = readlines('hint.txt')
-for line in parse(input):
-  print(line)
+
+button1 = None
+button2 = None
+prize = None
+games = list[Game]()
+for line in input:
+  result = parse(line)
+  if result is None and button1 is not None and button2 is not None and prize is not None:
+    game = Game(buttons=(button1, button2), prize=prize)
+    games.append(game)
+    button1 = None
+    button2 = None
+    prize = None
+  if isinstance(result, Button):
+    if button1 is None:
+      button1 = result
+    else:
+      button2 = result
+  if isinstance(result, Prize):
+    prize = result
+
+# The last game has no blank line divider
+if button1 is not None and button2 is not None and prize is not None:
+  game = Game(buttons=(button1, button2), prize=prize)
+  games.append(game)
+print(games)
