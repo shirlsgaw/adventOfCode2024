@@ -168,7 +168,7 @@ def compute_fencing(map: list[str], regions: list[list[tuple[int, int]]]) -> int
 ####
 # Main
 ####
-map = readlines('sample.txt')
+map = readlines('input12.txt')
 regions = list(list[tuple[int, int]]())
 for y in range(0, len(map)):
   for x in range(0, len(map[0])):
