@@ -72,6 +72,10 @@ class Game:
     return (delta_x * delta_x + delta_y * delta_y)
 
   def value_constraints(self, multiplier1: int, multiplier2: int):
+    if multiplier1 < 0:
+      return -1
+    if multiplier2 < 0:
+      return -1
     if multiplier1 > 100:
       return -1
     if multiplier2 > 100:
@@ -95,9 +99,11 @@ class Game:
   def solve(self) -> list[int]:
     result = optimize.minimize(fun=lambda x: self.cost(x),
                                x0=[0, 0],
-                               method='SLSQP',
+                               method='trust-constr',
                                constraints=self.gen_constraints())
+    #print(result)
     if not result.success:
+      print(result.message)
       return []
     return [round(x) for x in result.x]
 
@@ -162,7 +168,16 @@ while index < len(input):
 total_cost = 0
 for game in games:
   result = game.solve()
-  if len(result) > 0 and game.check(result):
-    cost = game.cost(result)
-    total_cost += cost
+
+  if len(result) > 0:
+    check_result = game.check(result)
+    if not check_result:
+      #print(f"Game failed: {game}")
+      distance = game.sq_euclidian_distance(result[0], result[1])
+      #print(f". result: {result}, distance={distance}")
+    else:
+      if result[0] < 0 or result[1] < 0:
+        print(f"NEGATIVES: {game} result={result}")
+      cost = game.cost(result)
+      total_cost += cost
 print('Total cost:' + str(total_cost))
