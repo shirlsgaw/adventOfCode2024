@@ -1,7 +1,10 @@
 from collections.abc import Generator
 from typing import Union
+from numpy._typing import _UnknownType
 from scipy import optimize
 import re
+from scipy.optimize import NonlinearConstraint, OptimizeResult
+import numpy as np
 
 
 ####
@@ -61,6 +64,46 @@ class Game:
   def __eq__(self, other):
     return (self.buttons, self.prize) == (other.buttons, other.prize)
 
+  def sq_euclidian_distance(self, multiplier1: int, multiplier2: int):
+    delta_x = self.buttons[0].x * multiplier1 + self.buttons[
+        1].x * multiplier2 - self.prize.x
+    delta_y = self.buttons[0].y * multiplier1 + self.buttons[
+        1].y * multiplier2 - self.prize.y
+    return (delta_x * delta_x + delta_y * delta_y)
+
+  def value_constraints(self, multiplier1: int, multiplier2: int):
+    if multiplier1 > 100:
+      return -1
+    if multiplier2 > 100:
+      return -1
+    return 0
+
+  def gen_constraints(self) -> list[NonlinearConstraint]:
+    constraints = list[NonlinearConstraint]()
+    constraints.append(
+        NonlinearConstraint(
+            fun=lambda x: self.sq_euclidian_distance(x[0], x[1]), lb=0, ub=0))
+    constraints.append(
+        NonlinearConstraint(fun=lambda x: self.value_constraints(x[0], x[1]),
+                            lb=0,
+                            ub=1))
+    return constraints
+
+  def cost(self, x) -> float:
+    return self.buttons[0].cost * x[0] + self.buttons[1].cost * x[1]
+
+  def solve(self) -> list[int]:
+    result = optimize.minimize(fun=lambda x: self.cost(x),
+                               x0=[0, 0],
+                               method='SLSQP',
+                               constraints=self.gen_constraints())
+    if not result.success:
+      return []
+    return [round(x) for x in result.x]
+
+  def check(self, x: list[int]) -> bool:
+    return self.sq_euclidian_distance(x[0], x[1]) == 0
+
 
 ####
 # readlines: reads input from file into lines of strings
@@ -116,4 +159,11 @@ while index < len(input):
     games.append(game)
     index += 3
 
-print(games)
+for game in games:
+  print(f'Solving game: {game}')
+  result = game.solve()
+  print(f'. Solved with {result}')
+  if len(result) > 0 and game.check(result):
+    print('. Successful')
+  else:
+    print(f". Failed result={result}")
