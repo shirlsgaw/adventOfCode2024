@@ -48,7 +48,6 @@ def compute_perimeter(x: int, y: int, plots: list[str]) -> int:
     border_sides += 1
   return border_sides
 
-
 ####
 # Find all points that are in the same region as (x, y)
 ####
@@ -84,19 +83,85 @@ def get_region(x: int, y: int, plots: list[str]) -> Generator[tuple[int, int], N
   if not is_outside(next_x, next_y, plots) and value == plots[next_y][next_x]:
     yield from get_region(next_x, next_y, plots)
 
+####
+# North
+####
+def has_north_border(x: int, y: int, plots: list[str], target_value: str) -> bool:
+  next_y = y - 1
+  next_x = x
+  return is_outside(next_x, next_y, plots) or target_value != plots[next_y][next_x]
+
+####
+# West
+####
+def has_west_border(x: int, y: int, plots: list[str], target_value: str) -> bool:
+  next_y = y
+  next_x = x - 1
+  return is_outside(next_x, next_y, plots) or target_value != plots[next_y][next_x]
+
+####
+# East
+####
+def has_east_border(x: int, y: int, plots: list[str], target_value: str) -> bool:
+  next_y = y
+  next_x = x + 1
+  return is_outside(next_x, next_y, plots) or target_value != plots[next_y][next_x]
+
+####
+# South
+####
+def has_south_border(x: int, y: int, plots: list[str], target_value: str) -> bool:
+  next_y = y + 1
+  next_x = x
+  return is_outside(next_x, next_y, plots) or target_value != plots[next_y][next_x]
+
+
 def compute_fencing(map: list[str], regions: list[list[tuple[int, int]]]) -> int:
   cost = 0
   for region in regions:
-    value = None
+    value = None    
     area = len(region)
-    perimeter = 0
-    for (x, y) in region:
-      value = map[y][x]
-      perimeter += compute_perimeter(x, y, map)
-    fencing = area * perimeter
-    cost += fencing
+    region_set = set[tuple[int, int]](region)
     
-    print(f'.({value}): {area} * {perimeter} = {fencing}')
+    sides = 0
+    for (x, y) in region:
+      #print(f'({x}, {y})')
+      value = map[y][x]
+      # West
+      west_y = y
+      west_x = x - 1
+
+      # East
+      east_y = y
+      east_x = x + 1
+
+      # North
+      north_y = y - 1
+      north_x = x
+
+      # South
+      south_y = y + 1
+      south_x = x
+      if has_north_border(x, y, map, value):
+        if (west_x, west_y) not in region or not has_north_border(west_x, west_y, map, value):
+          #print(f'. ({x}, {y}) North')
+          sides += 1
+      if has_south_border(x, y, map, value):
+        if (west_x, west_y) not in region or not has_south_border(west_x, west_y, map, value):
+          #print(f'. ({x}, {y}) South')
+          sides += 1
+      if has_west_border(x, y, map, value):
+        if (north_x, north_y) not in region or not has_west_border(north_x, north_y, map, value):
+          #print(f'. ({x}, {y}) West')
+          sides += 1
+      if has_east_border(x, y, map, value):
+        if (north_x, north_y) not in region or not has_east_border(north_x, north_y, map, value):
+          #print(f'. ({x}, {y}) East')
+          sides += 1
+          
+    fencing = area * sides
+    print(f'Region {region} has {area} * {sides} = {fencing}')
+    cost += fencing
   return cost
 
 
