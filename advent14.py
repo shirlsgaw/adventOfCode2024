@@ -2,8 +2,7 @@ from collections import Counter
 from collections.abc import Generator
 import re
 from enum import Enum
-
-from numpy import quantile
+import time
 
 Quadrant = Enum('Quadrant', [('MID', 0), ('NW', 1), ('NE', 2), ('SW', 3),
                              ('SE', 4)])
@@ -134,11 +133,13 @@ def compute_safety(headquarters: Headquarters,
       safety_number *= quadrant_counter[quadrant]
   return safety_number
 
+
 ####
 # Return a counter of robot locations by quadrant
 ####
-def count_robot_locations(headquarters: Headquarters,
-                          locations: list[Robot]) -> Counter[Quadrant, int]:
+def count_robot_locations(
+    headquarters: Headquarters,
+    locations: list[tuple[int, int]]) -> Counter[Quadrant]:
   quadrant_list = list[Quadrant]()
   for (x, y) in locations:
     quadrant = headquarters.get_quadrant(x, y)
@@ -146,17 +147,16 @@ def count_robot_locations(headquarters: Headquarters,
   quadrant_counter = Counter(quadrant_list)
   return quadrant_counter
 
-####
-# Checks if the location is outside the headquarters
-####
-def is_outside(x: int, y: int, headquarters: Headquarters):
-  return x < 0 or x >= headquarters.width or y < 0 or y >= headquarters.height
 
 ####
 # Find all points that are in the same blob/region as (x, y)
 ####
 explored = set[tuple[int, int]]()
-def get_region(x: int, y: int, robot_locations: list[tuple[int, int]], headquarters: Headquarters) -> Generator[tuple[int, int], None, None]:
+
+
+def get_region(
+    x: int, y: int, robot_locations: list[tuple[int, int]],
+    headquarters: Headquarters) -> Generator[tuple[int, int], None, None]:
   if (x, y) in explored:
     return None
 
@@ -168,22 +168,27 @@ def get_region(x: int, y: int, robot_locations: list[tuple[int, int]], headquart
   for (dx, dy) in directions:
     next_x = x + dx
     next_y = y + dy
-    if not is_outside(next_x, next_y, headquarters) and (next_x, next_y) in locations_set:
+    location = (next_x, next_y)
+    if location in locations_set:
       yield from get_region(next_x, next_y, robot_locations, headquarters)
+
 
 ####
 # Size of largest region
 ####
-def count_largest_region(headquarters: Headquarters, robot_locations: list[tuple[int, int]]) -> int:
-  largest = 0
-  for (x, y) in robot_locations:
-    result = get_region(x, y, robot_locations, headquarters)
-    count = 0
-    for (px, py) in result:
-      count += 1
-    if count > largest:
-      largest = count
-  return largest
+def count_largest_region(headquarters: Headquarters,
+                         robot_locations: list[tuple[int, int]]) -> int:
+  regions = dict[tuple[int, int], set[tuple[int, int]]]()
+  for x in range(0, headquarters.width):
+    for y in range(0, headquarters.height):
+      regions[(x, y)] = set[tuple[int, int]]()
+      for (px, py) in get_region(x, y, robot_locations, headquarters):
+        regions[(x, y)].add((px, py))
+  max = 0
+  for (x, y) in regions:
+    if len(regions[(x, y)]) > max:
+      max = len(regions[(x, y)])
+  return max
 
 ####
 # Main
@@ -200,15 +205,13 @@ ebhq = Headquarters(width=101, height=103, robots=robots)
 s = 100
 #print(f'After {s} seconds:')
 robot_locations = ebhq.simulate(seconds=s)
-#draw(ebhq, robot_locations)
+#
 safety = compute_safety(ebhq, robot_locations)
 print(f'Safety number: {safety}')
 
-MIN_TREE_BLOB_SIZE = 10
-for i in range(0, 500000):
-  ebhq = Headquarters(width=101, height=103, robots=robots)
+for i in range(111, 112):
   robot_locations = ebhq.simulate(seconds=i)
-  if count_largest_region(ebhq, robot_locations) > MIN_TREE_BLOB_SIZE:
-    draw(ebhq, robot_locations)
-    print(f'Seconds: {i}')
-    break
+  largest = count_largest_region(ebhq, robot_locations)
+  draw(ebhq, robot_locations)
+  print(f'After {i} seconds: largest = {largest}')
+  #time.sleep(2)
