@@ -71,41 +71,31 @@ class Game:
         1].y * multiplier2 - self.prize.y
     return (delta_x * delta_x + delta_y * delta_y)
 
-  def value_constraints(self, multiplier1: int, multiplier2: int):
-    if multiplier1 < 0:
-      return -1
-    if multiplier2 < 0:
-      return -1
-    if multiplier1 > 100:
-      return -1
-    if multiplier2 > 100:
-      return -1
-    return 0
-
   def gen_constraints(self) -> list[NonlinearConstraint]:
     constraints = list[NonlinearConstraint]()
     constraints.append(
         NonlinearConstraint(
             fun=lambda x: self.sq_euclidian_distance(x[0], x[1]), lb=0, ub=0))
-    constraints.append(
-        NonlinearConstraint(fun=lambda x: self.value_constraints(x[0], x[1]),
-                            lb=0,
-                            ub=1))
     return constraints
 
   def cost(self, x) -> float:
     return self.buttons[0].cost * x[0] + self.buttons[1].cost * x[1]
 
   def solve(self) -> list[int]:
-    result = optimize.minimize(fun=lambda x: self.cost(x),
-                               x0=[0, 0],
-                               method='trust-constr',
-                               constraints=self.gen_constraints())
-    #print(result)
-    if not result.success:
-      print(result.message)
-      return []
-    return [round(x) for x in result.x]
+    # SLSQP is much faster but it sometimes fails when trust-constr is successful
+    method = ['SLSQP', 'trust-constr']
+    for method in method:
+      result = optimize.minimize(fun=lambda x: self.cost(x),
+                                 x0=[0, 0],
+                                 bounds=optimize.Bounds(lb=0, ub=np.inf),
+                                 method=method,
+                                 constraints=self.gen_constraints())
+      #print(result)
+      if result.success:
+        return [round(x) for x in result.x]
+
+    #print(f". Failed to solve for {self.prize}")
+    return []
 
   def check(self, x: list[int]) -> bool:
     return self.sq_euclidian_distance(x[0], x[1]) == 0
@@ -171,13 +161,8 @@ for game in games:
 
   if len(result) > 0:
     check_result = game.check(result)
-    if not check_result:
-      #print(f"Game failed: {game}")
-      distance = game.sq_euclidian_distance(result[0], result[1])
-      #print(f". result: {result}, distance={distance}")
-    else:
-      if result[0] < 0 or result[1] < 0:
-        print(f"NEGATIVES: {game} result={result}")
+    if check_result:
       cost = game.cost(result)
+      #print(f"cost={cost}")
       total_cost += cost
 print('Total cost:' + str(total_cost))
