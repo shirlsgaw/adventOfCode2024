@@ -39,8 +39,8 @@ class Button:
 class Prize:
 
   def __init__(self, x: int, y: int):
-    self.x = x
-    self.y = y
+    self.x = 10000000000000 + x
+    self.y = 10000000000000 + y
 
   def __repr__(self):
     return f"Prize(({self.x}, {self.y}))"
@@ -64,38 +64,23 @@ class Game:
   def __eq__(self, other):
     return (self.buttons, self.prize) == (other.buttons, other.prize)
 
-  def sq_euclidian_distance(self, multiplier1: int, multiplier2: int):
+  def sq_euclidian_distance(self, multiplier1: int, multiplier2: int) -> int:
     delta_x = self.buttons[0].x * multiplier1 + self.buttons[
         1].x * multiplier2 - self.prize.x
     delta_y = self.buttons[0].y * multiplier1 + self.buttons[
         1].y * multiplier2 - self.prize.y
     return (delta_x * delta_x + delta_y * delta_y)
 
-  def gen_constraints(self) -> list[NonlinearConstraint]:
-    constraints = list[NonlinearConstraint]()
-    constraints.append(
-        NonlinearConstraint(
-            fun=lambda x: self.sq_euclidian_distance(x[0], x[1]), lb=0, ub=0))
-    return constraints
-
   def cost(self, x) -> float:
     return self.buttons[0].cost * x[0] + self.buttons[1].cost * x[1]
 
-  def solve(self) -> list[int]:
-    # SLSQP is much faster but it sometimes fails when trust-constr is successful
-    method = ['SLSQP', 'trust-constr']
-    for method in method:
-      result = optimize.minimize(fun=lambda x: self.cost(x),
-                                 x0=[0, 0],
-                                 bounds=optimize.Bounds(lb=0, ub=np.inf),
-                                 method=method,
-                                 constraints=self.gen_constraints())
-      #print(result)
-      if result.success:
-        return [round(x) for x in result.x]
-
-    #print(f". Failed to solve for {self.prize}")
-    return []
+  def solve2(self) -> list[int]:
+    a = self.buttons[0]
+    b = self.buttons[1]
+    c = self.prize
+    m = -(b.y * c.x - b.x * c.y) * 1.0 / (a.y * b.x - a.x * b.y)
+    n = (a.y * c.x - a.x * c.y) * 1.0 / (a.y * b.x - a.x * b.y)
+    return [round(m), round(n)]
 
   def check(self, x: list[int]) -> bool:
     return self.sq_euclidian_distance(x[0], x[1]) == 0
@@ -129,7 +114,7 @@ def parse(line: str) -> Union[Button, Prize, None]:
 ####
 # Main
 ####
-input = readlines('input13.txt')
+input = readlines('sample.txt')
 
 button1 = None
 button2 = None
@@ -157,12 +142,13 @@ while index < len(input):
 
 total_cost = 0
 for game in games:
-  result = game.solve()
+  result = game.solve2()
 
   if len(result) > 0:
+    print(f". Solution: {result}")
     check_result = game.check(result)
     if check_result:
       cost = game.cost(result)
-      #print(f"cost={cost}")
+      print(f"cost={cost}, result={result}")
       total_cost += cost
 print('Total cost:' + str(total_cost))
