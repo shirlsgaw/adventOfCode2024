@@ -1,7 +1,11 @@
+from collections import Counter
 from collections.abc import Generator
 import re
 
 
+####
+# Robot
+####
 class Robot:
 
   def __init__(self, x: int, y: int, vx: int, vy: int):
@@ -21,6 +25,37 @@ class Robot:
 
   def __hash__(self) -> int:
     return hash((self.x, self.y, self.vx, self.vy))
+
+
+####
+# Headquarters
+####
+class Headquarters:
+
+  def __init__(self, width: int, height: int, robots: list[Robot]):
+    self.width = width
+    self.height = height
+    self.robots = robots
+
+  def __repr__(self) -> str:
+    return f'Headquarters({self.width}x{self.height}, {self.robots})'
+
+  def __eq__(self, other: object) -> bool:
+    if not isinstance(other, Headquarters):
+      return False
+    return (self.width == other.width
+            and self.height == other.height) and (self.robots == other.robots)
+
+  def __hash__(self) -> int:
+    return hash((self.width, self.height, self.robots))
+
+  def simulate(self, seconds: int) -> list[tuple[int, int]]:
+    result = list[tuple[int, int]]()
+    for robot in self.robots:
+      location_x = (robot.x + robot.vx * seconds) % self.width
+      location_y = (robot.y + robot.vy * seconds) % self.height
+      result.append((location_x, location_y))
+    return result
 
 
 ####
@@ -47,10 +82,33 @@ def parse(line: str) -> Robot:
 
 
 ####
+# draw
+####
+def draw(headquarters: Headquarters, locations: list[tuple[int, int]]):
+  counter = Counter(locations)
+  for y in range(0, headquarters.height):
+    row = ''
+    for x in range(0, headquarters.width):
+      if (x, y) in counter:
+        row += str(counter[(x, y)])
+      else:
+        row += '.'
+    print(row)
+
+
+####
 # Main
 ####
 input = readlines('sample.txt')
 
+robots = list[Robot]()
 for line in input:
   robot = parse(line)
-  print(robot)
+  robots.append(robot)
+
+# TODO(sgaw): change to (101, 103)
+ebhq = Headquarters(width=11, height=7, robots=robots)
+s = 100
+print(f'After {s} seconds:')
+robot_locations = ebhq.simulate(seconds=s)
+draw(ebhq, robot_locations)
