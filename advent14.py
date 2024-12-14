@@ -1,6 +1,11 @@
 from collections import Counter
-from collections.abc import Generator
 import re
+from enum import Enum
+
+from numpy import quantile
+
+Quadrant = Enum('Quadrant', [('MID', 0), ('NW', 1), ('NE', 2), ('SW', 3),
+                             ('SE', 4)])
 
 
 ####
@@ -57,6 +62,26 @@ class Headquarters:
       result.append((location_x, location_y))
     return result
 
+  def get_quadrant(self, x: int, y: int) -> Quadrant:
+    mid_vertical = int(self.width / 2)
+    mid_horizontal = int(self.height / 2)
+
+    if x == mid_vertical:
+      return Quadrant.MID
+    elif y == mid_horizontal:
+      return Quadrant.MID
+    else:
+      if x < mid_vertical:
+        if y < mid_horizontal:
+          return Quadrant.NW
+        else:
+          return Quadrant.SW
+      else:
+        if y < mid_horizontal:
+          return Quadrant.NE
+        else:
+          return Quadrant.SE
+
 
 ####
 # readlines: reads input from file into lines of strings
@@ -97,6 +122,23 @@ def draw(headquarters: Headquarters, locations: list[tuple[int, int]]):
 
 
 ####
+# Computes a safety number from the given headquarters and robot locations
+####
+def compute_safety(headquarters: Headquarters,
+                   locations: list[tuple[int, int]]) -> int:
+  quadrant_list = list[Quadrant]()
+  for (x, y) in locations:
+    quadrant = headquarters.get_quadrant(x, y)
+    quadrant_list.append(quadrant)
+  quadrant_counter = Counter(quadrant_list)
+  safety_number = 1
+  for quadrant in quadrant_counter:
+    if quadrant != Quadrant.MID:
+      safety_number *= quadrant_counter[quadrant]
+  return safety_number
+
+
+####
 # Main
 ####
 input = readlines('sample.txt')
@@ -109,6 +151,8 @@ for line in input:
 # TODO(sgaw): change to (101, 103)
 ebhq = Headquarters(width=11, height=7, robots=robots)
 s = 100
-print(f'After {s} seconds:')
+#print(f'After {s} seconds:')
 robot_locations = ebhq.simulate(seconds=s)
-draw(ebhq, robot_locations)
+#draw(ebhq, robot_locations)
+safety = compute_safety(ebhq, robot_locations)
+print(f'Safety number: {safety}')
