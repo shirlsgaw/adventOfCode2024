@@ -114,7 +114,7 @@ def parse(line: str) -> Union[Button, Prize, None]:
 ####
 # Main
 ####
-input = readlines('sample.txt')
+input = readlines('input13.txt')
 
 button1 = None
 button2 = None
@@ -145,10 +145,10 @@ for game in games:
   result = game.solve2()
 
   if len(result) > 0:
-    print(f". Solution: {result}")
+    #print(f". Solution: {result}")
     check_result = game.check(result)
     if check_result:
       cost = game.cost(result)
-      print(f"cost={cost}, result={result}")
+      #print(f"cost={cost}, result={result}")
       total_cost += cost
 print('Total cost:' + str(total_cost))
