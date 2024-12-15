@@ -11,22 +11,24 @@ import time
 class Box:
 
   def __init__(self, x: int, y: int):
-    self.x = x
-    self.y = y
+    self.left = (x, y)
+    self.right = (x, y)
 
   def __repr__(self) -> str:
-    return f'Box({self.x}, {self.y})'
+    return f'Box[{self.left}, {self.right}]'
 
   def __eq__(self, other: object) -> bool:
     if not isinstance(other, Box):
       return False
-    return (self.x == other.x and self.y == other.y)
+    return (self.left == other.left and self.right == other.right)
 
   def __hash__(self) -> int:
-    return hash((self.x, self.y))
+    return hash((self.left, self.right))
 
   def contains_point(self, x: int, y: int) -> bool:
-    return self.x == x and self.y == y
+    if x < self.left[0] or x > self.right[0]:
+      return False
+    return y == self.left[1]
 
 
 ####
@@ -131,7 +133,8 @@ class Warehouse:
   def sum_box_coordinates(self) -> int:
     sum = 0
     for b in self.boxes:
-      sum += b.x + b.y * 100
+      # TODO(sgaw): change to using the distance from the closest edge
+      sum += b.left[0] + b.left[1] * 100
     return sum
 
 
