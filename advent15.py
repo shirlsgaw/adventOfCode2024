@@ -6,6 +6,30 @@ import time
 
 
 ####
+# Box
+####
+class Box:
+
+  def __init__(self, x: int, y: int):
+    self.x = x
+    self.y = y
+
+  def __repr__(self) -> str:
+    return f'Box({self.x}, {self.y})'
+
+  def __eq__(self, other: object) -> bool:
+    if not isinstance(other, Box):
+      return False
+    return (self.x == other.x and self.y == other.y)
+
+  def __hash__(self) -> int:
+    return hash((self.x, self.y))
+
+  def contains_point(self, x: int, y: int) -> bool:
+    return self.x == x and self.y == y
+
+
+####
 # Warehouse
 ####
 class Warehouse:
@@ -19,16 +43,16 @@ class Warehouse:
   ####
   def parse_map(
       self, original: list[str]
-  ) -> tuple[set[tuple[int, int]], set[tuple[int, int]], tuple[int, int]]:
+  ) -> tuple[set[tuple[int, int]], set[Box], tuple[int, int]]:
     walls = set[tuple[int, int]]()
-    boxes = set[tuple[int, int]]()
+    boxes = set[Box]()
     robot = tuple[int, int]()
     for y, line in enumerate(original):
       for x, char in enumerate(line):
         if char == '#':
           walls.add((x, y))
         elif char == 'O':
-          boxes.add((x, y))
+          boxes.add(Box(x, y))
         elif char == '@':
           robot = (x, y)
     return walls, boxes, robot
@@ -43,7 +67,8 @@ class Warehouse:
       for x in range(0, len(self.original[y])):
         if self.original[y][0] != '#':
           continue
-        if (x, y) in self.boxes:
+        b = Box(x, y)
+        if b in self.boxes:
           row += 'O'
         elif (x, y) in self.walls:
           row += '#'
@@ -64,13 +89,14 @@ class Warehouse:
     # Try to move the closest box to an empty space in the same
     # direction as the robot is supposed to move, freeing space
     # for the robot to move
-    if (new_x, new_y) in self.boxes:
+    b = Box(new_x, new_y)
+    if b in self.boxes:
       self.move_box(new_x, new_y, direction)
 
     if (new_x, new_y) in self.walls:
       #print('..Location in walls')
       return
-    if (new_x, new_y) in self.boxes:
+    if b in self.boxes:
       #print('..Location still in boxes')
       return
     self.robot = (new_x, new_y)
@@ -81,29 +107,31 @@ class Warehouse:
   # blocking boxs until the box is free (if possible)
   ####
   def move_box(self, bx: int, by: int, direction: tuple[int, int]):
-    if (bx, by) not in self.boxes:
+    b = Box(bx, by)
+    if b not in self.boxes:
       raise ValueError(f'({bx},{by}) is not a box')
     next_x = bx + direction[0]
     next_y = by + direction[1]
+    next_b = Box(next_x, next_y)
 
     # Can't move box
     if (next_x, next_y) in self.walls:
       return
-    if (next_x, next_y) in self.boxes:
+    if next_b in self.boxes:
       self.move_box(next_x, next_y, direction)
     # The adjacent moves must have been unsuccessful, so we cannot move this box
-    if (next_x, next_y) in self.boxes:
+    if next_b in self.boxes:
       return
     # Move box
-    self.boxes.remove((bx, by))
-    self.boxes.add((next_x, next_y))
+    self.boxes.remove(b)
+    self.boxes.add(next_b)
 
   ####
   # Compute the sum of all box Goods Positioning System coordiante
   def sum_box_coordinates(self) -> int:
     sum = 0
-    for (bx, by) in self.boxes:
-      sum += bx + by * 100
+    for b in self.boxes:
+      sum += b.x + b.y * 100
     return sum
 
 
