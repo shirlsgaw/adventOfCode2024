@@ -1,18 +1,13 @@
-from collections import Counter
-from collections.abc import Generator
-import re
-from enum import Enum
-import time
-
-
 ####
 # Box
 ####
 class Box:
 
-  def __init__(self, x: int, y: int):
-    self.left = (x, y)
-    self.right = (x, y)
+  def __init__(self, left_x: int, left_y: int, right_x, right_y):
+    self.left = (left_x, left_y)
+    self.right = (right_x, right_y)
+    if left_y != right_y:
+      raise ValueError(f'Box must be horizontal, {self.left} -> {self.right}')
 
   def __repr__(self) -> str:
     return f'Box[{self.left}, {self.right}]'
@@ -50,11 +45,18 @@ class Warehouse:
     boxes = set[Box]()
     robot = tuple[int, int]()
     for y, line in enumerate(original):
+      box_left = None
       for x, char in enumerate(line):
         if char == '#':
           walls.add((x, y))
-        elif char == 'O':
-          boxes.add(Box(x, y))
+        elif char == '[':
+          box_left = (x, y)
+        elif char == ']':
+          if box_left is None:
+            raise ValueError(
+                f'Invalid map: ({x}, {y}) contains ] but no [ position set')
+          boxes.add(Box(box_left[0], box_left[1], x, y))
+          box_left = None
         elif char == '@':
           robot = (x, y)
     return walls, boxes, robot
@@ -69,9 +71,11 @@ class Warehouse:
       for x in range(0, len(self.original[y])):
         if self.original[y][0] != '#':
           continue
-        b = Box(x, y)
-        if b in self.boxes:
-          row += 'O'
+        b = self.find_box(x, y)
+        if b is not None:
+          if b.left[0] == x and b.left[1] == y:
+            row += '[]'
+            x += 1
         elif (x, y) in self.walls:
           row += '#'
         elif (x, y) == self.robot:
@@ -91,9 +95,9 @@ class Warehouse:
     # Try to move the closest box to an empty space in the same
     # direction as the robot is supposed to move, freeing space
     # for the robot to move
-    b = Box(new_x, new_y)
-    if b in self.boxes:
-      self.move_box(new_x, new_y, direction)
+    b = self.find_box(new_x, new_y)
+    if b is not None:
+      self.move_box(b, direction)
 
     if (new_x, new_y) in self.walls:
       #print('..Location in walls')
@@ -105,22 +109,30 @@ class Warehouse:
     #print(f'...Moved robot to ({self.robot[0]}, {self.robot[1]})')
 
   ####
+  # Find a box containing the point if it exists
+  ####
+  def find_box(self, x: int, y: int) -> Box | None:
+    for box in self.boxes:
+      if box.contains_point(x, y):
+        return box
+    return None
+
+  ####
   # Attempt to move a box in the direction specified, recursively calling all adjacent
   # blocking boxs until the box is free (if possible)
   ####
-  def move_box(self, bx: int, by: int, direction: tuple[int, int]):
-    b = Box(bx, by)
-    if b not in self.boxes:
-      raise ValueError(f'({bx},{by}) is not a box')
-    next_x = bx + direction[0]
-    next_y = by + direction[1]
-    next_b = Box(next_x, next_y)
+  def move_box(self, b: Box, direction: tuple[int, int]):
+    next_x = b.left.x + direction[0]
+    next_y = b.left.y + direction[1]
+    r_x = next_x + 1
+    r_y = next_y + 1
+    next_b = Box(next_x, next_y, r_x, r_y)
 
     # Can't move box
     if (next_x, next_y) in self.walls:
       return
     if next_b in self.boxes:
-      self.move_box(next_x, next_y, direction)
+      self.move_box(next_b, direction)
     # The adjacent moves must have been unsuccessful, so we cannot move this box
     if next_b in self.boxes:
       return
@@ -168,7 +180,7 @@ def get_direction(move: str) -> tuple[int, int]:
 input = readlines('sample.txt')
 wmap = list[str]()
 for line in input:
-  
+
   if line.startswith('#'):
     transformed_line = ''
     for char in line:
@@ -194,7 +206,7 @@ for line in input:
   if len(line) == 0:
     continue
   instructions.append(line)
-#warehouse.draw()
+warehouse.draw()
 
 instructions.clear()
 
