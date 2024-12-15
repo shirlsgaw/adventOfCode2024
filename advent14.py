@@ -121,74 +121,17 @@ def draw(headquarters: Headquarters, locations: list[tuple[int, int]]):
     print(row)
 
 
-####
-# Computes a safety number from the given headquarters and robot locations
-####
-def compute_safety(headquarters: Headquarters,
-                   locations: list[tuple[int, int]]) -> int:
-  quadrant_counter = count_robot_locations(headquarters, locations)
-  safety_number = 1
-  for quadrant in quadrant_counter:
-    if quadrant != Quadrant.MID:
-      safety_number *= quadrant_counter[quadrant]
-  return safety_number
-
-
-####
-# Return a counter of robot locations by quadrant
-####
-def count_robot_locations(
+def count_x_and_y(
     headquarters: Headquarters,
-    locations: list[tuple[int, int]]) -> Counter[Quadrant]:
-  quadrant_list = list[Quadrant]()
-  for (x, y) in locations:
-    quadrant = headquarters.get_quadrant(x, y)
-    quadrant_list.append(quadrant)
-  quadrant_counter = Counter(quadrant_list)
-  return quadrant_counter
+    robot_locations: list[tuple[int,
+                                int]]) -> tuple[Counter[int], Counter[int]]:
+  x_list = list[int]()
+  y_list = list[int]()
+  for (rx, ry) in robot_locations:
+    x_list.append(rx)
+    y_list.append(ry)
+  return Counter(x_list), Counter(y_list)
 
-
-####
-# Find all points that are in the same blob/region as (x, y)
-####
-explored = set[tuple[int, int]]()
-
-
-def get_region(
-    x: int, y: int, robot_locations: list[tuple[int, int]],
-    headquarters: Headquarters) -> Generator[tuple[int, int], None, None]:
-  if (x, y) in explored:
-    return None
-
-  locations_set = set[tuple[int, int]](robot_locations)
-  explored.add((x, y))
-  yield (x, y)
-
-  directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
-  for (dx, dy) in directions:
-    next_x = x + dx
-    next_y = y + dy
-    location = (next_x, next_y)
-    if location in locations_set:
-      yield from get_region(next_x, next_y, robot_locations, headquarters)
-
-
-####
-# Size of largest region
-####
-def count_largest_region(headquarters: Headquarters,
-                         robot_locations: list[tuple[int, int]]) -> int:
-  regions = dict[tuple[int, int], set[tuple[int, int]]]()
-  for x in range(0, headquarters.width):
-    for y in range(0, headquarters.height):
-      regions[(x, y)] = set[tuple[int, int]]()
-      for (px, py) in get_region(x, y, robot_locations, headquarters):
-        regions[(x, y)].add((px, py))
-  max = 0
-  for (x, y) in regions:
-    if len(regions[(x, y)]) > max:
-      max = len(regions[(x, y)])
-  return max
 
 ####
 # Main
@@ -205,13 +148,20 @@ ebhq = Headquarters(width=101, height=103, robots=robots)
 s = 100
 #print(f'After {s} seconds:')
 robot_locations = ebhq.simulate(seconds=s)
-#
-safety = compute_safety(ebhq, robot_locations)
-print(f'Safety number: {safety}')
 
-for i in range(111, 112):
-  robot_locations = ebhq.simulate(seconds=i)
-  largest = count_largest_region(ebhq, robot_locations)
-  draw(ebhq, robot_locations)
-  print(f'After {i} seconds: largest = {largest}')
-  #time.sleep(2)
+for i in range(5001, 10_000):
+  locations = ebhq.simulate(seconds=i)
+  (x_counter, y_counter) = count_x_and_y(ebhq, locations)
+  max_x_value = 0
+  for x_value in x_counter.values():
+    if x_value > max_x_value:
+      max_x_value = x_value
+  max_y_value = 0
+  for y_value in y_counter.values():
+    if y_value > max_y_value:
+      max_y_value = y_value
+  if max_x_value > 30 and max_y_value > 14:
+    draw(ebhq, locations)
+    print(f'After {i} seconds max_x={max_x_value} max_y={max_y_value}')
+    time.sleep(3)
+print('Done')
