@@ -165,8 +165,27 @@ def get_direction(move: str) -> tuple[int, int]:
 ####
 # Main
 ####
-input = readlines('input15.txt')
-warehouse = Warehouse(input)
+input = readlines('sample.txt')
+wmap = list[str]()
+for line in input:
+  
+  if line.startswith('#'):
+    transformed_line = ''
+    for char in line:
+      if char == '#':
+        transformed_line += '##'
+      elif char == 'O':
+        transformed_line += '[]'
+      elif char == '.':
+        transformed_line += '..'
+      elif char == '@':
+        transformed_line += '@.'
+      else:
+        raise ValueError(f'Invalid character: {char}')
+    print(transformed_line)
+    wmap.append(transformed_line)
+
+warehouse = Warehouse(wmap)
 
 instructions = list[str]()
 for line in input:
@@ -176,6 +195,8 @@ for line in input:
     continue
   instructions.append(line)
 #warehouse.draw()
+
+instructions.clear()
 
 for line in instructions:
   for move in line:
