@@ -124,7 +124,7 @@ def get_direction(move: str) -> tuple[int, int]:
 ####
 # Main
 ####
-input = readlines('sample.txt')
+input = readlines('input15.txt')
 warehouse = Warehouse(input)
 
 instructions = list[str]()
@@ -134,12 +134,12 @@ for line in input:
   if len(line) == 0:
     continue
   instructions.append(line)
-warehouse.draw()
+#warehouse.draw()
 
 for line in instructions:
   for move in line:
     direction = get_direction(move)
     warehouse.move_robot(direction)
-warehouse.draw()
+#warehouse.draw()
 sum = warehouse.sum_box_coordinates()
 print(f'Sum of box coordinates: {sum}')
