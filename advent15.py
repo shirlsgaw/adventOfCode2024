@@ -122,6 +122,8 @@ class Warehouse:
   # blocking boxs until the box is free (if possible)
   ####
   def move_box(self, b: Box, direction: tuple[int, int]):
+    print(f'..Moving box {b} in direction {direction}')
+    self.boxes.remove(b)
     next_x = b.left[0] + direction[0]
     next_y = b.left[1] + direction[1]
     r_x = next_x + 1
@@ -130,14 +132,19 @@ class Warehouse:
 
     # Can't move box
     if (next_x, next_y) in self.walls or (r_x, r_y) in self.walls:
+      print('...Box blocked by wall')
       return
-    if next_b in self.boxes:
-      self.move_box(next_b, direction)
+    f = self.find_box(next_x, next_y)
+    if f is not None:
+      print(f'..Box {f} in direction {direction} is blocking')
+      self.move_box(f, direction)
     # The adjacent moves must have been unsuccessful, so we cannot move this box
-    if next_b in self.boxes:
+    g = self.find_box(next_x, next_y)
+    if g is not None:
+      print(f'..Unsuccessful moving box {f}, found {g}')
+      self.boxes.add(b)
       return
     # Move box
-    self.boxes.remove(b)
     self.boxes.add(next_b)
 
   ####
@@ -207,7 +214,7 @@ for line in input:
   instructions.append(line)
 warehouse.draw()
 
-instructions = ['<<<v<^^^<<^>>']
+instructions = ['<']
 for line in instructions:
   for move in line:
     direction = get_direction(move)
