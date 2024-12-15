@@ -121,6 +121,57 @@ def draw(headquarters: Headquarters, locations: list[tuple[int, int]]):
     print(row)
 
 
+####
+# Find all points that are in the same region as (x, y)
+####
+directions = [(-1, 0), (0, -1), (1, 0), (0, 1)]
+
+
+def get_region(x: int, y: int,
+               location_set: set[tuple[int, int]]) -> list[tuple[int, int]]:
+  explored = set[tuple[int, int]]()
+  horizon = list[tuple[int, int]]()
+  horizon.append((x, y))
+  region = list[tuple[int, int]]()
+  while len(horizon) > 0:
+    (x, y) = horizon.pop()
+    if (x, y) in explored:
+      continue
+    explored.add((x, y))
+    region.append((x, y))
+    for (dx, dy) in directions:
+      next_x = x + dx
+      next_y = y + dy
+      next = (next_x, next_y)
+      if next in location_set and next not in explored:
+        horizon.append((next_x, next_y))
+  return region
+
+
+####
+# Region size count
+####
+def count_region_sizes(headquarters: Headquarters,
+                       location_set: set[tuple[int, int]]) -> dict[int, int]:
+  visited = set[tuple[int, int]]()
+  region_id = 0
+  regions = dict[int, int]()
+  for (lx, ly) in location_set:
+    if (lx, ly) in visited:
+      continue
+    visited.add((lx, ly))
+
+    region_locations = get_region(lx, ly, location_set)
+    visited.update(region_locations)
+
+    regions[region_id] = len(region_locations)
+    region_id += 1
+  return regions
+
+
+####
+# Count the number of points that have the same x value and repeat for y values
+####
 def count_x_and_y(
     headquarters: Headquarters,
     robot_locations: list[tuple[int,
@@ -149,19 +200,14 @@ s = 100
 #print(f'After {s} seconds:')
 robot_locations = ebhq.simulate(seconds=s)
 
-for i in range(5001, 10_000):
+for i in range(1, 10_000):
   locations = ebhq.simulate(seconds=i)
-  (x_counter, y_counter) = count_x_and_y(ebhq, locations)
-  max_x_value = 0
-  for x_value in x_counter.values():
-    if x_value > max_x_value:
-      max_x_value = x_value
-  max_y_value = 0
-  for y_value in y_counter.values():
-    if y_value > max_y_value:
-      max_y_value = y_value
-  if max_x_value > 30 and max_y_value > 14:
+  regions_dict = count_region_sizes(ebhq, set(locations.copy()))
+  max_region_size = max(regions_dict.values())
+  if i % 200 == 0:
+    print(f'After {i} seconds: max region size {max_region_size}')
+  if max_region_size > 20:
     draw(ebhq, locations)
-    print(f'After {i} seconds max_x={max_x_value} max_y={max_y_value}')
+    print(f'After {i} seconds, max region size: {max_region_size}')
     time.sleep(3)
 print('Done')
