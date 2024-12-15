@@ -65,20 +65,8 @@ class Warehouse:
     # direction as the robot is supposed to move, freeing space
     # for the robot to move
     if (new_x, new_y) in self.boxes:
-      potential_x = new_x
-      potential_y = new_y
-      while (potential_x, potential_y) in self.boxes:
-        potential_x += direction[0]
-        potential_y += direction[1]
+      self.move_box(new_x, new_y, direction)
 
-      # Can't move the box into an empty space therefore, we can't move the robot
-      if (potential_x, potential_y) in self.walls:
-        #print('...Can\'t move the box')
-        return
-      # Replace location of box into the space found
-      self.boxes.remove((new_x, new_y))
-      self.boxes.add((potential_x, potential_y))
-      #print(f'...Moved box to ({potential_x},{potential_y})')
     if (new_x, new_y) in self.walls:
       #print('..Location in walls')
       return
@@ -87,6 +75,28 @@ class Warehouse:
       return
     self.robot = (new_x, new_y)
     #print(f'...Moved robot to ({self.robot[0]}, {self.robot[1]})')
+
+  ####
+  # Attempt to move a box in the direction specified, recursively calling all adjacent
+  # blocking boxs until the box is free (if possible)
+  ####
+  def move_box(self, bx: int, by: int, direction: tuple[int, int]):
+    if (bx, by) not in self.boxes:
+      raise ValueError(f'({bx},{by}) is not a box')
+    next_x = bx + direction[0]
+    next_y = by + direction[1]
+
+    # Can't move box
+    if (next_x, next_y) in self.walls:
+      return
+    if (next_x, next_y) in self.boxes:
+      self.move_box(next_x, next_y, direction)
+    # The adjacent moves must have been unsuccessful, so we cannot move this box
+    if (next_x, next_y) in self.boxes:
+      return
+    # Move box
+    self.boxes.remove((bx, by))
+    self.boxes.add((next_x, next_y))
 
   ####
   # Compute the sum of all box Goods Positioning System coordiante
