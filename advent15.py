@@ -122,14 +122,14 @@ class Warehouse:
   # blocking boxs until the box is free (if possible)
   ####
   def move_box(self, b: Box, direction: tuple[int, int]):
-    next_x = b.left.x + direction[0]
-    next_y = b.left.y + direction[1]
+    next_x = b.left[0] + direction[0]
+    next_y = b.left[1] + direction[1]
     r_x = next_x + 1
-    r_y = next_y + 1
+    r_y = next_y
     next_b = Box(next_x, next_y, r_x, r_y)
 
     # Can't move box
-    if (next_x, next_y) in self.walls:
+    if (next_x, next_y) in self.walls or (r_x, r_y) in self.walls:
       return
     if next_b in self.boxes:
       self.move_box(next_b, direction)
@@ -177,7 +177,7 @@ def get_direction(move: str) -> tuple[int, int]:
 ####
 # Main
 ####
-input = readlines('sample.txt')
+input = readlines('hint.txt')
 wmap = list[str]()
 for line in input:
 
@@ -194,7 +194,6 @@ for line in input:
         transformed_line += '@.'
       else:
         raise ValueError(f'Invalid character: {char}')
-    print(transformed_line)
     wmap.append(transformed_line)
 
 warehouse = Warehouse(wmap)
@@ -208,12 +207,12 @@ for line in input:
   instructions.append(line)
 warehouse.draw()
 
-instructions.clear()
-
+instructions = ['<<<v<^^^<<^>>']
 for line in instructions:
   for move in line:
     direction = get_direction(move)
     warehouse.move_robot(direction)
-#warehouse.draw()
+    warehouse.draw()
+    print()
 sum = warehouse.sum_box_coordinates()
 print(f'Sum of box coordinates: {sum}')
