@@ -88,6 +88,14 @@ class Warehouse:
     self.robot = (new_x, new_y)
     #print(f'...Moved robot to ({self.robot[0]}, {self.robot[1]})')
 
+  ####
+  # Compute the sum of all box Goods Positioning System coordiante
+  def sum_box_coordinates(self) -> int:
+    sum = 0
+    for (bx, by) in self.boxes:
+      sum += bx + by * 100
+    return sum
+
 
 ####
 # readlines: reads input from file into lines of strings
@@ -116,7 +124,7 @@ def get_direction(move: str) -> tuple[int, int]:
 ####
 # Main
 ####
-input = readlines('hint.txt')
+input = readlines('sample.txt')
 warehouse = Warehouse(input)
 
 instructions = list[str]()
@@ -133,3 +141,5 @@ for line in instructions:
     direction = get_direction(move)
     warehouse.move_robot(direction)
 warehouse.draw()
+sum = warehouse.sum_box_coordinates()
+print(f'Sum of box coordinates: {sum}')
