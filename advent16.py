@@ -42,14 +42,14 @@ class Point:
 @dataclass(order=True)
 class PathMark:
   point: Point = field(compare=False)
-  direction: Direction | None = field(compare=False)
+  direction: Direction = field(compare=False)
   previous: Self | None = field(compare=False)
   cost: int = field(compare=True)
 
   def __init__(self,
                point: Point,
                previous: Self | None,
-               direction: Direction | None,
+               direction: Direction,
                cost: int = 0):
     self.point = point
     self.previous = previous
