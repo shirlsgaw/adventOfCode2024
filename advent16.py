@@ -68,8 +68,7 @@ class Maze:
   # Break the map into the locations of walls as well as the start and end points
   ####
   def parse_map(
-      self, original: list[str]
-  ) -> tuple[set[tuple[int, int]], tuple[int, int], tuple[int, int]]:
+      self, original: list[str]) -> tuple[set[tuple[int, int]], Point, Point]:
     walls = set[tuple[int, int]]()
     start = None
     end = None
@@ -78,9 +77,9 @@ class Maze:
         if char == '#':
           walls.add((x, y))
         elif char == 'S':
-          start = (x, y)
+          start = Point(x, y)
         elif char == 'E':
-          end = (x, y)
+          end = Point(x, y)
     if start is None or end is None:
       raise ValueError(f'Invalid map, start={start} end={end}')
     return walls, start, end
@@ -95,9 +94,9 @@ class Maze:
       for x in range(0, len(self.original[y])):
         if (x, y) in self.walls:
           row += '#'
-        elif (x, y) == self.start:
+        elif Point(x, y) == self.start:
           row += 'S'
-        elif (x, y) == self.end:
+        elif Point(x, y) == self.end:
           row += 'E'
         else:
           row += '.'
