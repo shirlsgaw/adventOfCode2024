@@ -209,8 +209,8 @@ def readlines(source):
 ####
 # Main
 ####
-input = readlines('sample.txt')
+input = readlines('input17.txt')
 maze = Maze(input)
 path, cost = maze.find_path()
 print(f'Path cost: {cost}')
-maze.draw(path=path)
+#maze.draw(path=path)
