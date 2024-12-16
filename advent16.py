@@ -67,15 +67,14 @@ class Maze:
   ####
   # Break the map into the locations of walls as well as the start and end points
   ####
-  def parse_map(
-      self, original: list[str]) -> tuple[set[tuple[int, int]], Point, Point]:
-    walls = set[tuple[int, int]]()
+  def parse_map(self, original: list[str]) -> tuple[set[Point], Point, Point]:
+    walls = set[Point]()
     start = None
     end = None
     for y, line in enumerate(original):
       for x, char in enumerate(line):
         if char == '#':
-          walls.add((x, y))
+          walls.add(Point(x, y))
         elif char == 'S':
           start = Point(x, y)
         elif char == 'E':
@@ -92,11 +91,12 @@ class Maze:
     for y in range(0, len(self.original)):
       row = ''
       for x in range(0, len(self.original[y])):
-        if (x, y) in self.walls:
+        p = Point(x, y)
+        if p in self.walls:
           row += '#'
-        elif Point(x, y) == self.start:
+        elif p == self.start:
           row += 'S'
-        elif Point(x, y) == self.end:
+        elif p == self.end:
           row += 'E'
         else:
           row += '.'
