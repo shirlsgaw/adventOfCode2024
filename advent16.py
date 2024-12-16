@@ -138,7 +138,7 @@ class Maze:
         Direction.UP, Direction.DOWN, Direction.LEFT, Direction.RIGHT
     ]
 
-    priority_queue.append(PathMark(self.start, None, None))
+    priority_queue.append(PathMark(self.start, None, Direction.RIGHT))
     visited_cost[self.start] = 0
 
     path_end = None
@@ -165,19 +165,18 @@ class Maze:
           continue
 
         cost = item.cost + 1
-        if item.direction is not None:
-          delta_x = direction.value[0] - item.direction.value[0]
-          sq_x = delta_x * delta_x
+        delta_x = direction.value[0] - item.direction.value[0]
+        sq_x = delta_x * delta_x
 
-          delta_y = direction.value[1] - item.direction.value[1]
-          sq_y = delta_y * delta_y
+        delta_y = direction.value[1] - item.direction.value[1]
+        sq_y = delta_y * delta_y
 
-          # 180 degree turn
-          if sq_x == 2 or sq_y == 2:
-            cost += 2000
-          # 90 degree turn
-          elif sq_x + sq_y > 0:
-            cost += 1000
+        # 180 degree turn
+        if sq_x == 2 or sq_y == 2:
+          cost += 2000
+        # 90 degree turn
+        elif sq_x + sq_y > 0:
+          cost += 1000
         # Allow duplicate path points if the cost of the new path is lower
         if p not in visited_cost or visited_cost[p] > cost:
           path_mark = PathMark(p, item, direction, cost=cost)
@@ -210,7 +209,7 @@ def readlines(source):
 ####
 # Main
 ####
-input = readlines('hint.txt')
+input = readlines('sample.txt')
 maze = Maze(input)
 path, cost = maze.find_path()
 print(f'Path cost: {cost}')
