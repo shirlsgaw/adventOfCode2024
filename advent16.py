@@ -99,8 +99,10 @@ class Maze:
   ####
   # Draw the map
   ####
-  def draw(self):
-    #print(f'Robot expected location: {self.robot}')
+  def draw(self, path: list[PathMark] = list[PathMark]()):
+    path_dict = dict[Point, PathMark]()
+    for mark in path:
+      path_dict[mark.point] = mark
     for y in range(0, len(self.original)):
       row = ''
       for x in range(0, len(self.original[y])):
@@ -111,6 +113,16 @@ class Maze:
           row += 'S'
         elif p == self.end:
           row += 'E'
+        elif p in path_dict:
+          direction = path_dict[p].direction
+          if direction is Direction.UP:
+            row += '^'
+          elif direction is Direction.DOWN:
+            row += 'v'
+          elif direction is Direction.LEFT:
+            row += '<'
+          elif direction is Direction.RIGHT:
+            row += '>'
         else:
           row += '.'
       print(row)
@@ -132,7 +144,7 @@ class Maze:
     path_end = None
     while len(priority_queue) > 0:
       item = heappop(priority_queue)
-      print(f'. Current item: {item}')
+      #print(f'. Current item: {item}')
       if item.point == self.end:
         path_end = item
         break
@@ -140,16 +152,16 @@ class Maze:
       # Check if this item is a duplicate and we've found a lower cost
       # way to reach this point
       if visited_cost[item.point] < item.cost:
-        print(f'.  found lower cost way to {item.point}')
+        #print(f'.  found lower cost way to {item.point}')
         continue
 
       for direction in directions:
         x = item.point.x + direction.value[0]
         y = item.point.y + direction.value[1]
         p = Point(x, y)
-        print(f'. Checking point {p}')
+        #print(f'. Checking point {p}')
         if p in self.walls:
-          print(f'.  {p} is a wall')
+          #print(f'.  {p} is a wall')
           continue
 
         cost = item.cost + 1
@@ -166,11 +178,10 @@ class Maze:
           # 90 degree turn
           elif sq_x + sq_y > 0:
             cost += 1000
-        print(f'.  Expecting cost: {cost}')
         # Allow duplicate path points if the cost of the new path is lower
         if p not in visited_cost or visited_cost[p] > cost:
           path_mark = PathMark(p, item, direction, cost=cost)
-          print(f'. Adding to priority queue {path_mark}')
+          #print(f'. Adding to priority queue {path_mark}')
           visited_cost[p] = cost
           heappush(priority_queue, path_mark)
 
@@ -178,7 +189,7 @@ class Maze:
       raise ValueError(f'No path found from {self.start} to {self.end}')
     path = list[PathMark]()
     curr = path_end
-    print(f'Found path: end={path_end}')
+    #print(f'Found path: end={path_end}')
     while curr is not None:
       path.append(curr)
       curr = curr.previous
@@ -201,8 +212,6 @@ def readlines(source):
 ####
 input = readlines('hint.txt')
 maze = Maze(input)
-maze.draw()
 path, cost = maze.find_path()
 print(f'Path cost: {cost}')
-for p in path:
-  print(p)
+maze.draw(path=path)
