@@ -122,30 +122,40 @@ class Warehouse:
   # blocking boxs until the box is free (if possible)
   ####
   def move_box(self, b: Box, direction: tuple[int, int]):
-    print(f'..Moving box {b} in direction {direction}')
-    self.boxes.remove(b)
-    next_x = b.left[0] + direction[0]
-    next_y = b.left[1] + direction[1]
-    r_x = next_x + 1
-    r_y = next_y
-    next_b = Box(next_x, next_y, r_x, r_y)
+    #print(f'..Moving box {b} in direction {direction}')
+    targets = set[Box]()
+    to_move = list[Box]()
+    to_move.append(b)
 
-    # Can't move box
-    if (next_x, next_y) in self.walls or (r_x, r_y) in self.walls:
-      print('...Box blocked by wall')
-      return
-    f = self.find_box(next_x, next_y)
-    if f is not None:
-      print(f'..Box {f} in direction {direction} is blocking')
-      self.move_box(f, direction)
-    # The adjacent moves must have been unsuccessful, so we cannot move this box
-    g = self.find_box(next_x, next_y)
-    if g is not None:
-      print(f'..Unsuccessful moving box {f}, found {g}')
-      self.boxes.add(b)
-      return
-    # Move box
-    self.boxes.add(next_b)
+    while len(to_move) > 0:
+      b = to_move.pop(0)
+      #print(f'Considering {b}')
+      targets.add(b)
+
+      left_side = (b.left[0] + direction[0], b.left[1] + direction[1])
+      right_side = (left_side[0] + 1, left_side[1])
+
+      # Blocked from moving
+      if (left_side[0], left_side[1]) in self.walls:
+        return
+      if (right_side[0], right_side[1]) in self.walls:
+        return
+
+      tmp1 = self.find_box(left_side[0], left_side[1])
+      #print(f'..Adding left side of box {tmp1}')
+      if tmp1 and tmp1 not in targets:
+        to_move.append(tmp1)
+      tmp2 = self.find_box(right_side[0], right_side[1])
+      #print(f'..Adding right side of box {tmp2}')
+      if tmp2 and tmp2 not in targets:
+        to_move.append(tmp2)
+
+    #print(f'..Moving {targets}')
+    for b in targets:
+      self.boxes.remove(b)
+      left = (b.left[0] + direction[0], b.left[1] + direction[1])
+      right = (left[0] + 1, left[1])
+      self.boxes.add(Box(left[0], left[1], right[0], right[1]))
 
   ####
   # Compute the sum of all box Goods Positioning System coordiante
@@ -214,12 +224,11 @@ for line in input:
   instructions.append(line)
 warehouse.draw()
 
-instructions = ['<']
 for line in instructions:
   for move in line:
     direction = get_direction(move)
     warehouse.move_robot(direction)
-    warehouse.draw()
-    print()
+warehouse.draw()
+
 sum = warehouse.sum_box_coordinates()
 print(f'Sum of box coordinates: {sum}')
