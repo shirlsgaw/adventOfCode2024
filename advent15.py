@@ -167,23 +167,8 @@ class Warehouse:
   def sum_box_coordinates(self) -> int:
     sum = 0
     for b in self.boxes:
-      # TODO(sgaw): change to using the distance from the closest edge
       sum += b.left[0] + b.left[1] * 100
     return sum
-
-  ####
-  # Compute the sum of all box Goods Positioning System coordiantes
-  ####
-  def sum_box_coordinates_part2(self) -> int:
-    sum = 0
-    for b in self.boxes:
-      delta_top = b.left[1]
-      delta_left = b.left[0]
-
-      value = delta_top * 100 + delta_left
-      sum += value
-    return sum
-
 
 ####
 # readlines: reads input from file into lines of strings
@@ -212,7 +197,7 @@ def get_direction(move: str) -> tuple[int, int]:
 ####
 # Main
 ####
-input = readlines('sample.txt')
+input = readlines('input15.txt')
 wmap = list[str]()
 for line in input:
 
@@ -240,7 +225,7 @@ for line in input:
   if len(line) == 0:
     continue
   instructions.append(line)
-warehouse.draw()
+#warehouse.draw()
 
 for line in instructions:
   for move in line:
@@ -249,7 +234,7 @@ for line in instructions:
     warehouse.move_robot(direction)
     #warehouse.draw()
 
-warehouse.draw()
+#warehouse.draw()
 
-sum = warehouse.sum_box_coordinates_part2()
+sum = warehouse.sum_box_coordinates()
 print(f'Sum of box coordinates: {sum}')
