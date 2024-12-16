@@ -99,6 +99,8 @@ class Maze:
           row += 'S'
         elif (x, y) == self.end:
           row += 'E'
+        else:
+          row += '.'
       print(row)
 
 
