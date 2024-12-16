@@ -149,13 +149,18 @@ class Warehouse:
       #print(f'..Adding right side of box {tmp2}')
       if tmp2 and tmp2 not in targets:
         to_move.append(tmp2)
+      #print(f'..to_move: {to_move}')
 
-    #print(f'..Moving {targets}')
+    boxes_to_add = set[Box]()
     for b in targets:
+      #print(f'..Removing {b}')
       self.boxes.remove(b)
       left = (b.left[0] + direction[0], b.left[1] + direction[1])
       right = (left[0] + 1, left[1])
-      self.boxes.add(Box(left[0], left[1], right[0], right[1]))
+      to_add = Box(left[0], left[1], right[0], right[1])
+      boxes_to_add.add(to_add)
+    #print(f'..Adding {boxes_to_add}')
+    self.boxes.update(boxes_to_add)
 
   ####
   # Compute the sum of all box Goods Positioning System coordiante
@@ -194,7 +199,7 @@ def get_direction(move: str) -> tuple[int, int]:
 ####
 # Main
 ####
-input = readlines('hint.txt')
+input = readlines('sample.txt')
 wmap = list[str]()
 for line in input:
 
@@ -226,8 +231,11 @@ warehouse.draw()
 
 for line in instructions:
   for move in line:
+    #print(f'Moving robot in direction {move}')
     direction = get_direction(move)
     warehouse.move_robot(direction)
+    #warehouse.draw()
+
 warehouse.draw()
 
 sum = warehouse.sum_box_coordinates()
