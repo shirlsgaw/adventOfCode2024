@@ -40,6 +40,9 @@ class Computer:
       elif instruction == 6:  # bdv
         self.div('B', self.program[pc + 1])
         pc += 2
+      elif instruction == 7:  # cdv
+        self.div('C', self.program[pc + 1])
+        pc += 2
 
   ####
   # bxc: XOR on registers B and C
@@ -138,10 +141,13 @@ computer = Computer(registers={
     'A': 31,
     'B': 14,
     'C': 13
-}, program=[4, 22])  #parse_input(input)
+},
+                    program=[0, 2, 6, 2, 7, 3])  #parse_input(input)
 print(f'Registers: {computer.registers}')
 print(f'Program: {computer.program}')
 
 computer.execute_program()
 print(f'Registers: {computer.registers}')
-print(str(14 ^ 13))
+print(str(31 >> 2))
+print(str(14 >> 2))
+print(str(13 >> 3))
