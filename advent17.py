@@ -141,12 +141,7 @@ def parse_input(input: list[str]) -> Computer:
 # Main
 ####
 input = readlines('sample.txt')
-computer = Computer(registers={
-    'A': 2024,
-    'B': 2024,
-    'C': 43690
-},
-                    program=[0, 1, 5, 4, 3, 0])  #parse_input(input)
+computer = parse_input(input)
 print(f'Registers: {computer.registers}')
 print(f'Program: {computer.program}')
 
