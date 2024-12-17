@@ -99,7 +99,9 @@ class Maze:
   ####
   # Draw the map
   ####
-  def draw(self, path: list[PathMark] = list[PathMark]()):
+  def draw(self,
+           path: list[PathMark] = list[PathMark](),
+           points: set[Point] = set[Point]()):
     path_dict = dict[Point, PathMark]()
     for mark in path:
       path_dict[mark.point] = mark
@@ -109,6 +111,8 @@ class Maze:
         p = Point(x, y)
         if p in self.walls:
           row += '#'
+        elif p in points:
+          row += 'O'
         elif p == self.start:
           row += 'S'
         elif p == self.end:
@@ -128,12 +132,34 @@ class Maze:
       print(row)
 
   ####
+  # Cost from going from the current position in the direction specified
+  ####
+  def cost(self, item: PathMark, direction: Direction) -> int:
+    x = item.point.x + direction.value[0]
+    y = item.point.y + direction.value[1]
+
+    cost = item.cost + 1
+    delta_x = direction.value[0] - item.direction.value[0]
+    sq_x = delta_x * delta_x
+
+    delta_y = direction.value[1] - item.direction.value[1]
+    sq_y = delta_y * delta_y
+
+    # 180 degree turn
+    if sq_x == 2 or sq_y == 2:
+      cost += 2000
+    # 90 degree turn
+    elif sq_x + sq_y > 0:
+      cost += 1000
+    return cost
+
+  ####
   # Find path between and the start and end with the cost of the path
   ####
-  def find_path(self) -> tuple[list[PathMark], int]:
-    print(f'Finding path from {self.start} to {self.end}')
+  def find_path(
+      self, visited_cost: dict[Point, int] = dict[Point, int]()
+  ) -> tuple[list[PathMark], int]:
     priority_queue = list[PathMark]()
-    visited_cost = dict[Point, int]()
     directions = [
         Direction.UP, Direction.DOWN, Direction.LEFT, Direction.RIGHT
     ]
@@ -164,19 +190,7 @@ class Maze:
           #print(f'.  {p} is a wall')
           continue
 
-        cost = item.cost + 1
-        delta_x = direction.value[0] - item.direction.value[0]
-        sq_x = delta_x * delta_x
-
-        delta_y = direction.value[1] - item.direction.value[1]
-        sq_y = delta_y * delta_y
-
-        # 180 degree turn
-        if sq_x == 2 or sq_y == 2:
-          cost += 2000
-        # 90 degree turn
-        elif sq_x + sq_y > 0:
-          cost += 1000
+        cost = self.cost(item, direction)
         # Allow duplicate path points if the cost of the new path is lower
         if p not in visited_cost or visited_cost[p] > cost:
           path_mark = PathMark(p, item, direction, cost=cost)
@@ -196,6 +210,67 @@ class Maze:
     path.reverse()
     return (path, cost)
 
+  ####
+  # Mark all points that can be discovered on a path with a cost
+  # equal to the submitted point_cost dictionary
+  ####
+  def mark_paths(
+      self, point_cost: dict[Point, PathMark] = dict[Point, PathMark]()
+  ) -> set[Point]:
+    best_path_tiles = set[Point]()
+    for p in point_cost:
+      best_path_tiles.add(p)
+    end_cost = point_cost[self.end].cost
+
+    # Since multiple paths can lead to the endpoint with the same cost
+    # we need to track all of them to return all visited points for all
+    # paths with the same cost
+    end_path_marks = list[PathMark]()
+
+    priority_queue = list[PathMark]()
+    directions = [
+        Direction.UP, Direction.DOWN, Direction.LEFT, Direction.RIGHT
+    ]
+
+    priority_queue.append(PathMark(self.start, None, Direction.RIGHT))
+
+    while len(priority_queue) > 0:
+      item = heappop(priority_queue)
+      #print(f'. Current item: {item.point} cost={item.cost}')
+
+      # Stop exploring after we surpass the known optimal path cost
+      if item.cost > end_cost:
+        break
+
+      if item.point == self.end:
+        #print(f'.  found end point {item.point} cost={item.cost}')
+        end_path_marks.append(item)
+        continue
+
+      for direction in directions:
+        x = item.point.x + direction.value[0]
+        y = item.point.y + direction.value[1]
+        p = Point(x, y)
+        #print(f'. Checking point {p}')
+        if p in self.walls:
+          #print(f'.  {p} is a wall')
+          continue
+
+        if p == item.point:
+          continue
+
+        cost = self.cost(item, direction)
+        # Allow duplicate explorations as long as we don't exceed the total path cost
+        # of the optimal path
+        if cost <= end_cost:
+          path_mark = PathMark(p, item, direction, cost=cost)
+          heappush(priority_queue, path_mark)
+    for pm in end_path_marks:
+      while pm is not None:
+        best_path_tiles.add(pm.point)
+        pm = pm.previous
+    return best_path_tiles
+
 
 ####
 # readlines: reads input from file into lines of strings
@@ -209,8 +284,14 @@ def readlines(source):
 ####
 # Main
 ####
-input = readlines('input17.txt')
+input = readlines('hint.txt')
 maze = Maze(input)
 path, cost = maze.find_path()
 print(f'Path cost: {cost}')
-#maze.draw(path=path)
+path_dict = dict[Point, PathMark]()
+for mark in path:
+  path_dict[mark.point] = mark
+points = maze.mark_paths(path_dict)
+#maze.draw(points=points)
+size = len(points)
+print(f'Number of tiles: {size}')
