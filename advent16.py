@@ -257,9 +257,10 @@ class Maze:
           continue
 
         cost = self.cost(item, direction)
-        # Allow duplicate explorations as long as we don't exceed the total path cost
-        # of the optimal path
-        if cost <= end_cost:
+        # Allow duplicate explorations as long as we don't exceed the cost of
+        # reaching this point with the optimal path cost too much
+        sigma = 2000
+        if p not in point_cost or cost <= point_cost[p].cost + sigma:
           path_mark = PathMark(p, item, direction, cost=cost)
           heappush(priority_queue, path_mark)
     for pm in end_path_marks:
@@ -281,7 +282,7 @@ def readlines(source):
 ####
 # Main
 ####
-input = readlines('hint.txt')
+input = readlines('sample.txt')
 maze = Maze(input)
 path, cost = maze.find_path()
 print(f'Path cost: {cost}')
