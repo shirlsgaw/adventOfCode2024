@@ -12,6 +12,19 @@ class Computer:
     self.registers = registers
     self.program = program
 
+  def execute_program(self):
+    pc = 0
+    while pc < len(self.program):
+      instruction = self.program[pc]
+      if instruction in [0]:
+        numerator = self.registers['A']
+        power = self.program[pc + 1]
+        denominator = 1 << power
+        result = int(numerator / denominator)
+        self.registers['A'] = result
+        pc += 2
+        print(f'. {pc} adv: {power}, {numerator} / {denominator} = {result}')
+
 
 ####
 # readlines: reads input from file into lines of strings
@@ -44,6 +57,8 @@ def parse_input(input: list[str]) -> Computer:
 # Main
 ####
 input = readlines('sample.txt')
-computer = parse_input(input)
+computer = Computer(registers={'A': 10}, program=[0, 2])  #parse_input(input)
 print(f'Registers: {computer.registers}')
 print(f'Program: {computer.program}')
+
+computer.execute_program()
