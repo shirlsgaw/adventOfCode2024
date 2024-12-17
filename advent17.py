@@ -90,7 +90,7 @@ class Computer:
   def jnz(self, curr_pc) -> int:
     value = self.registers['A']
     if value == 0:
-      return curr_pc + 1
+      return curr_pc + 2
     else:
       return self.program[curr_pc + 1]
 
@@ -142,11 +142,11 @@ def parse_input(input: list[str]) -> Computer:
 ####
 input = readlines('sample.txt')
 computer = Computer(registers={
-    'A': 10,
-    'B': 14,
-    'C': 9
+    'A': 2024,
+    'B': 2024,
+    'C': 43690
 },
-                    program=[5, 0, 5, 1, 5, 4])  #parse_input(input)
+                    program=[0, 1, 5, 4, 3, 0])  #parse_input(input)
 print(f'Registers: {computer.registers}')
 print(f'Program: {computer.program}')
 
