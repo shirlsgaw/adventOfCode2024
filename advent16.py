@@ -69,6 +69,36 @@ class PathMark:
 
 
 ####
+# VisitedMark: Same as a PathMark but tracks all potential neighbors leading to this one with
+# the same cost.
+####
+@dataclass(order=True)
+class VisitedMark:
+  point: Point = field(compare=False)
+  paths: list[PathMark] = field(compare=False)
+  cost: int = field(compare=True)
+
+  def __init__(self,
+               point: Point,
+               paths: list[PathMark] = list[PathMark](),
+               cost: int = 0):
+    self.point = point
+    self.paths = paths
+    self.cost = cost
+
+  def __repr__(self) -> str:
+    return f'VisitedMark[point=({self.point.x}, {self.point.y}) cost={self.cost}]'
+
+  def __eq__(self, other: object) -> bool:
+    if not isinstance(other, VisitedMark):
+      return False
+    return (self.point == other.point) and (self.cost == other.cost)
+
+  def __hash__(self) -> int:
+    return hash((self.point.x, self.point.y, self.cost))
+
+
+####
 # Maze
 ####
 class Maze:
@@ -211,70 +241,80 @@ class Maze:
   # Mark all points that can be discovered on a path with a cost
   # equal to the submitted point_cost dictionary
   ####
-  def mark_paths(
-      self, point_cost: dict[Point, PathMark] = dict[Point, PathMark]()
-  ) -> set[Point]:
-    best_path_tiles = set[Point]()
-    for p in point_cost:
-      best_path_tiles.add(p)
-    end_cost = point_cost[self.end].cost
-    visited_costs = dict[Point, int]()
-    for key, value in point_cost.items():
-      visited_costs[key] = value.cost
-
-    # Since multiple paths can lead to the endpoint with the same cost
-    # we need to track all of them to return all visited points for all
-    # paths with the same cost
-    end_path_marks = list[PathMark]()
-
-    priority_queue = list[PathMark]()
+  def mark_paths(self, max_cost: int) -> set[Point]:
+    priority_queue = list[VisitedMark]()
     directions = [
         Direction.UP, Direction.DOWN, Direction.LEFT, Direction.RIGHT
     ]
+    visited_cost = dict[Point, int]()
 
-    priority_queue.append(PathMark(self.start, None, Direction.RIGHT))
+    priority_queue.append(
+        VisitedMark(self.start,
+                    paths=[PathMark(self.start, None, Direction.RIGHT)]))
+    end_mark = None
 
     while len(priority_queue) > 0:
       item = heappop(priority_queue)
-      if item.point not in visited_costs or item.cost < visited_costs[
-          item.point]:
-        visited_costs[item.point] = item.cost
-      print(
-          f'. Current item: {item.point} cost={item.cost} direction={item.direction}'
-      )
+      visited_cost[item.point] = item.cost
+      #print(f'. Current item: {item.point}, cost={item.cost}')
 
       # Stop exploring after we surpass the known optimal path cost
-      if item.cost > end_cost:
+      if item.cost > max_cost:
         break
 
       if item.point == self.end:
-        print(f'.  found end point {item.point} cost={item.cost}')
-        end_path_marks.append(item)
-        continue
+        size = len(item.paths)
+        print(
+            f'.  found end point {item.point} cost={item.cost}, num_paths={size}'
+        )
+        if end_mark is None or item.cost < end_mark.cost:
+          end_mark = item
+          continue
 
       for direction in directions:
         x = item.point.x + direction.value[0]
         y = item.point.y + direction.value[1]
         p = Point(x, y)
-        #print(f'. Checking point {p}')
+        #print(f'.  Checking point {p}')
         if p in self.walls:
-          #print(f'.  {p} is a wall')
           continue
 
-        if item.previous is not None and p == item.previous.point:
-          continue
+        # Don't revisit points that have already been visited
+        if len(item.paths) > 0:
+          parents = [path.point for path in item.paths]
+          if p in parents:
+            #print(f'.    {p} already visited')
+            continue
 
-        cost = self.cost(item, direction)
-        if cost > end_cost:
-          continue
-        print(f'.  Adding to priority queue {p} cost={cost}')
-        path_mark = PathMark(p, item, direction, cost=cost)
-        heappush(priority_queue, path_mark)
-    for pm in end_path_marks:
+        for mark in item.paths:
+          cost = self.cost(mark, direction)
+          if cost > max_cost:
+            continue
+          if p in visited_cost and visited_cost[p] + 1000 < cost:
+            continue
+          path_mark = PathMark(p, mark, direction, cost=cost)
+          visited_mark = VisitedMark(p, [path_mark], cost=cost)
+          if visited_mark not in priority_queue:
+            #print(
+            #    f'. Adding to priority queue {p}, cost={cost}, direction={direction}'
+            #)
+            heappush(priority_queue, visited_mark)
+          else:
+            existing_mark = priority_queue[priority_queue.index(visited_mark)]
+            #size = len(existing_mark.paths)
+            existing_mark.paths.append(path_mark)
+            #print(
+            #    f'.  found existing mark {existing_mark.point}, cost={existing_mark.cost}, direction={direction}, size={size}'
+            #)
+
+    if end_mark is None:
+      raise Exception('Expected to find end mark')
+    result = set[Point]()
+    for pm in end_mark.paths:
       while pm is not None:
-        best_path_tiles.add(pm.point)
+        result.add(pm.point)
         pm = pm.previous
-    return best_path_tiles
+    return result
 
 
 ####
@@ -289,14 +329,13 @@ def readlines(source):
 ####
 # Main
 ####
-input = readlines('hint.txt')
+input = readlines('sample.txt')
 maze = Maze(input)
 path, cost = maze.find_path()
 print(f'Path cost: {cost}')
-path_dict = dict[Point, PathMark]()
-for mark in path:
-  path_dict[mark.point] = mark
-points = maze.mark_paths(path_dict)
+last = path.pop()
+path.append(last)
+points = maze.mark_paths(last.cost)
 maze.draw(points=points)
 size = len(points)
 print(f'Number of tiles: {size}')
