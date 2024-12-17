@@ -26,6 +26,9 @@ class Computer:
         literal = self.program[pc + 1]
         self.bxl(literal)
         pc += 2
+      elif instruction == 2:  # bst
+        self.bst(self.program[pc + 1])
+        pc += 2
 
   ###
   # adv command
@@ -41,6 +44,13 @@ class Computer:
   def bxl(self, literal: int):
     operand = self.registers['B']
     self.registers['B'] = operand ^ literal
+
+  ####
+  # bst command
+  ####
+  def bst(self, combo_operand: int):
+    value = self.combo_operand(combo_operand)
+    self.registers['B'] = value % 8
 
   ####
   # operand: translate combo operand to its value
@@ -89,7 +99,7 @@ def parse_input(input: list[str]) -> Computer:
 # Main
 ####
 input = readlines('sample.txt')
-computer = Computer(registers={'B': 6}, program=[1, 7])  #parse_input(input)
+computer = Computer(registers={'A': 31, 'B': 14, 'C': 13}, program=[2, 6])  #parse_input(input)
 print(f'Registers: {computer.registers}')
 print(f'Program: {computer.program}')
 
