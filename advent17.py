@@ -19,6 +19,7 @@ class Computer:
   def execute_program(self):
     pc = 0
     while pc < len(self.program):
+      #print(f'opcode={self.program[pc]}, registers={self.registers}, pc={pc}')
       instruction = self.program[pc]
       if instruction == 0:  # adv
         self.div('A', self.program[pc + 1])
@@ -66,7 +67,7 @@ class Computer:
   # div: shift right for register
   ####
   def div(self, register: str, combo_operand: int):
-    value = self.registers[register]
+    value = self.registers['A']
     shift = self.combo_operand(combo_operand)
     self.registers[register] = value >> shift
 
@@ -140,10 +141,6 @@ def parse_input(input: list[str]) -> Computer:
 ####
 # Main
 ####
-input = readlines('sample.txt')
+input = readlines('input17.txt')
 computer = parse_input(input)
-print(f'Registers: {computer.registers}')
-print(f'Program: {computer.program}')
-
 computer.execute_program()
-print(f'Registers: {computer.registers}')
