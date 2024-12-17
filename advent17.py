@@ -31,6 +31,15 @@ class Computer:
         pc += 2
       elif instruction == 3:  # jnz
         pc = self.jnz(pc)
+      elif instruction == 4:  # bxc
+        self.bxc(self.program[pc + 1])
+        pc += 2
+
+  ####
+  # bxc: XOR on registers B and C
+  ####
+  def bxc(self, _: int):
+    self.registers['B'] = self.registers['B'] ^ self.registers['C']
 
   ###
   # adv: division on register A (right shift)
@@ -115,10 +124,10 @@ computer = Computer(registers={
     'A': 31,
     'B': 14,
     'C': 13
-},
-                    program=[3, 4, 2, 6, 0, 1])  #parse_input(input)
+}, program=[4, 22])  #parse_input(input)
 print(f'Registers: {computer.registers}')
 print(f'Program: {computer.program}')
 
 computer.execute_program()
 print(f'Registers: {computer.registers}')
+print(str(14 ^ 13))
