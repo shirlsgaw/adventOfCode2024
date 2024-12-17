@@ -329,13 +329,13 @@ def readlines(source):
 ####
 # Main
 ####
-input = readlines('sample.txt')
+input = readlines('input17.txt')
 maze = Maze(input)
 path, cost = maze.find_path()
 print(f'Path cost: {cost}')
 last = path.pop()
 path.append(last)
 points = maze.mark_paths(last.cost)
-maze.draw(points=points)
+#maze.draw(points=points)
 size = len(points)
 print(f'Number of tiles: {size}')
