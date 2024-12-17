@@ -20,7 +20,7 @@ class Computer:
     while pc < len(self.program):
       instruction = self.program[pc]
       if instruction == 0:  # adv
-        self.adv(self.program[pc + 1])
+        self.div('A', self.program[pc + 1])
         pc += 2
       elif instruction == 1:  # bxl
         literal = self.program[pc + 1]
@@ -34,6 +34,12 @@ class Computer:
       elif instruction == 4:  # bxc
         self.bxc(self.program[pc + 1])
         pc += 2
+      elif instruction == 5:  # out
+        self.out(self.program[pc + 1])
+        pc += 2
+      elif instruction == 6:  # bdv
+        self.div('B', self.program[pc + 1])
+        pc += 2
 
   ####
   # bxc: XOR on registers B and C
@@ -41,13 +47,21 @@ class Computer:
   def bxc(self, _: int):
     self.registers['B'] = self.registers['B'] ^ self.registers['C']
 
-  ###
-  # adv: division on register A (right shift)
-  ###
-  def adv(self, combo_operand: int):
-    value = self.registers['A']
+  ####
+  # out: outputs combo operand modulo 8
+  ####
+  def out(self, combo_operand: int):
+    value = self.combo_operand(combo_operand) % 8
+    # TODO(sgaw): comma seperate multiple outputs
+    print(value)
+
+  ####
+  # div: shift right for register
+  ####
+  def div(self, register: str, combo_operand: int):
+    value = self.registers[register]
     shift = self.combo_operand(combo_operand)
-    self.registers['A'] = value >> shift
+    self.registers[register] = value >> shift
 
   ####
   # bxl: XOR register B
