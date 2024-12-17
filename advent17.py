@@ -11,6 +11,7 @@ class Computer:
   def __init__(self, registers: dict[str, int], program: list[int]):
     self.registers = registers
     self.program = program
+    self.output = ''
 
   ####
   # execute_program
@@ -43,6 +44,7 @@ class Computer:
       elif instruction == 7:  # cdv
         self.div('C', self.program[pc + 1])
         pc += 2
+    print(f'Output: {self.output}')
 
   ####
   # bxc: XOR on registers B and C
@@ -55,8 +57,10 @@ class Computer:
   ####
   def out(self, combo_operand: int):
     value = self.combo_operand(combo_operand) % 8
-    # TODO(sgaw): comma seperate multiple outputs
-    print(value)
+    if len(self.output) == 0:
+      self.output = str(value)
+    else:
+      self.output += ',' + str(value)
 
   ####
   # div: shift right for register
@@ -138,16 +142,13 @@ def parse_input(input: list[str]) -> Computer:
 ####
 input = readlines('sample.txt')
 computer = Computer(registers={
-    'A': 31,
+    'A': 10,
     'B': 14,
-    'C': 13
+    'C': 9
 },
-                    program=[0, 2, 6, 2, 7, 3])  #parse_input(input)
+                    program=[5, 0, 5, 1, 5, 4])  #parse_input(input)
 print(f'Registers: {computer.registers}')
 print(f'Program: {computer.program}')
 
 computer.execute_program()
 print(f'Registers: {computer.registers}')
-print(str(31 >> 2))
-print(str(14 >> 2))
-print(str(13 >> 3))
