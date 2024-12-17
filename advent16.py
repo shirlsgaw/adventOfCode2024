@@ -135,9 +135,6 @@ class Maze:
   # Cost from going from the current position in the direction specified
   ####
   def cost(self, item: PathMark, direction: Direction) -> int:
-    x = item.point.x + direction.value[0]
-    y = item.point.y + direction.value[1]
-
     cost = item.cost + 1
     delta_x = direction.value[0] - item.direction.value[0]
     sq_x = delta_x * delta_x
