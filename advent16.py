@@ -218,6 +218,9 @@ class Maze:
     for p in point_cost:
       best_path_tiles.add(p)
     end_cost = point_cost[self.end].cost
+    visited_costs = dict[Point, int]()
+    for key, value in point_cost.items():
+      visited_costs[key] = value.cost
 
     # Since multiple paths can lead to the endpoint with the same cost
     # we need to track all of them to return all visited points for all
@@ -233,14 +236,19 @@ class Maze:
 
     while len(priority_queue) > 0:
       item = heappop(priority_queue)
-      #print(f'. Current item: {item.point} cost={item.cost}')
+      if item.point not in visited_costs or item.cost < visited_costs[
+          item.point]:
+        visited_costs[item.point] = item.cost
+      print(
+          f'. Current item: {item.point} cost={item.cost} direction={item.direction}'
+      )
 
       # Stop exploring after we surpass the known optimal path cost
       if item.cost > end_cost:
         break
 
       if item.point == self.end:
-        #print(f'.  found end point {item.point} cost={item.cost}')
+        print(f'.  found end point {item.point} cost={item.cost}')
         end_path_marks.append(item)
         continue
 
@@ -253,16 +261,15 @@ class Maze:
           #print(f'.  {p} is a wall')
           continue
 
-        if p == item.point:
+        if item.previous is not None and p == item.previous.point:
           continue
 
         cost = self.cost(item, direction)
-        # Allow duplicate explorations as long as we don't exceed the cost of
-        # reaching this point with the optimal path cost too much
-        sigma = 2000
-        if p not in point_cost or cost <= point_cost[p].cost + sigma:
-          path_mark = PathMark(p, item, direction, cost=cost)
-          heappush(priority_queue, path_mark)
+        if cost > end_cost:
+          continue
+        print(f'.  Adding to priority queue {p} cost={cost}')
+        path_mark = PathMark(p, item, direction, cost=cost)
+        heappush(priority_queue, path_mark)
     for pm in end_path_marks:
       while pm is not None:
         best_path_tiles.add(pm.point)
@@ -282,7 +289,7 @@ def readlines(source):
 ####
 # Main
 ####
-input = readlines('sample.txt')
+input = readlines('hint.txt')
 maze = Maze(input)
 path, cost = maze.find_path()
 print(f'Path cost: {cost}')
@@ -290,6 +297,6 @@ path_dict = dict[Point, PathMark]()
 for mark in path:
   path_dict[mark.point] = mark
 points = maze.mark_paths(path_dict)
-#maze.draw(points=points)
+maze.draw(points=points)
 size = len(points)
 print(f'Number of tiles: {size}')
