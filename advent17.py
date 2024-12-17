@@ -33,7 +33,7 @@ class Computer:
         pc = self.jnz(pc)
 
   ###
-  # adv command
+  # adv: division on register A (right shift)
   ###
   def adv(self, combo_operand: int):
     value = self.registers['A']
@@ -41,21 +41,21 @@ class Computer:
     self.registers['A'] = value >> shift
 
   ####
-  # bxl command
+  # bxl: XOR register B
   ####
   def bxl(self, literal: int):
     operand = self.registers['B']
     self.registers['B'] = operand ^ literal
 
   ####
-  # bst command
+  # bst: shift register B
   ####
   def bst(self, combo_operand: int):
     value = self.combo_operand(combo_operand)
     self.registers['B'] = value % 8
 
   ####
-  #
+  # jnz: jump command
   ####
   def jnz(self, curr_pc) -> int:
     value = self.registers['A']
@@ -115,7 +115,8 @@ computer = Computer(registers={
     'A': 31,
     'B': 14,
     'C': 13
-}, program=[3, 4, 2, 6, 0, 1])  #parse_input(input)
+},
+                    program=[3, 4, 2, 6, 0, 1])  #parse_input(input)
 print(f'Registers: {computer.registers}')
 print(f'Program: {computer.program}')
 
