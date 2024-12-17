@@ -19,23 +19,34 @@ class Computer:
     pc = 0
     while pc < len(self.program):
       instruction = self.program[pc]
-      if instruction == 0:
-        value = self.registers['A']
-        shift = self.combo_operand(self.program[pc + 1])
-        result = value >> shift
-        self.registers['A'] = result
+      if instruction == 0:  # adv
+        self.adv(self.program[pc + 1])
         pc += 2
-      elif instruction == 1:
-        operand = self.registers['B']
+      elif instruction == 1:  # bxl
         literal = self.program[pc + 1]
-        self.registers['B'] = operand ^ literal
+        self.bxl(literal)
         pc += 2
+
+  ###
+  # adv command
+  ###
+  def adv(self, combo_operand: int):
+    value = self.registers['A']
+    shift = self.combo_operand(combo_operand)
+    self.registers['A'] = value >> shift
+
+  ####
+  # bxl command
+  ####
+  def bxl(self, literal: int):
+    operand = self.registers['B']
+    self.registers['B'] = operand ^ literal
 
   ####
   # operand: translate combo operand to its value
   ####
   def combo_operand(self, combo_operand: int) -> int:
-    if combo_operand in [0, 1, 2, 3, 7]:
+    if combo_operand in [0, 1, 2, 3]:
       return combo_operand
     elif combo_operand == 4:
       return self.registers['A']
@@ -78,11 +89,9 @@ def parse_input(input: list[str]) -> Computer:
 # Main
 ####
 input = readlines('sample.txt')
-computer = Computer(registers={'A': 12}, program=[0, 2])  #parse_input(input)
+computer = Computer(registers={'B': 6}, program=[1, 7])  #parse_input(input)
 print(f'Registers: {computer.registers}')
 print(f'Program: {computer.program}')
 
 computer.execute_program()
 print(f'Registers: {computer.registers}')
-result = 12 >> 2
-print(result)
