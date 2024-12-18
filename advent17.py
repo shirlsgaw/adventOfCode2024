@@ -11,7 +11,7 @@ class Computer:
   def __init__(self, registers: dict[str, int], program: list[int]):
     self.registers = registers
     self.program = program
-    self.output = ''
+    self.output = list[int]()
 
   ####
   # execute_program
@@ -45,7 +45,8 @@ class Computer:
       elif instruction == 7:  # cdv
         self.div('C', self.program[pc + 1])
         pc += 2
-    print(f'Output: {self.output}')
+    out_str = ','.join(map(str, self.output))
+    print(f'Output: {out_str}')
 
   ####
   # bxc: XOR on registers B and C
@@ -58,10 +59,7 @@ class Computer:
   ####
   def out(self, combo_operand: int):
     value = self.combo_operand(combo_operand) % 8
-    if len(self.output) == 0:
-      self.output = str(value)
-    else:
-      self.output += ',' + str(value)
+    self.output.append(value)
 
   ####
   # div: shift right for register
