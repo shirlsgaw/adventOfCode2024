@@ -45,8 +45,8 @@ class Computer:
       elif instruction == 7:  # cdv
         self.div('C', self.program[pc + 1])
         pc += 2
-    out_str = ','.join(map(str, self.output))
-    print(f'Output: {out_str}')
+    #out_str = ','.join(map(str, self.output))
+    #print(f'Output: {out_str}')
 
   ####
   # bxc: XOR on registers B and C
@@ -142,3 +142,30 @@ def parse_input(input: list[str]) -> Computer:
 input = readlines('input17.txt')
 computer = parse_input(input)
 computer.execute_program()
+
+# A = 1 -> [0],               base_2 = 001
+# A = 8 -> [3, 0]             base_2 = 001 000
+# A = 67 -> [3, 3, 0]         base_2 = 0001 000 011
+# A = 541 -> [0, 3, 3, 0]     base_2 = 0001 000 011 101
+# A = 4329 -> [5, 0, 3, 3, 0] base_2 = 1 000 011 101 001
+# A = 34665 -> [5, 5, 0, 3, 3, 0]
+# A = 277320 -> [3, 5, 5, 0, 3, 3, 0]
+# A = 2218560
+# A = 17748484
+# 37221270076916
+current_output_target = [0]
+A = 1
+for index in range(1, len(computer.program)):
+  pc = len(computer.program) - 1 - index
+  current_output_target.insert(0, computer.program[pc])
+  for i in range(0, 64):
+    a = A * 8 + i
+    simulate = parse_input(input)
+    simulate.registers = {'A': a, 'B': 0, 'C': 0}
+    simulate.execute_program()
+    if simulate.output == current_output_target:
+      A = a
+      print(
+          f'i={i}, A={a} -> {simulate.output}'
+      )
+      break
