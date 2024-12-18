@@ -5,6 +5,7 @@ from heapq import heappop
 from dataclasses import dataclass, field
 import re
 
+
 ####
 # Direction
 ####
@@ -73,20 +74,24 @@ class PathMark:
 ####
 class MemorySpace:
 
-  def __init__(self, original: list[str]):
+  def __init__(self,
+               original: list[str],
+               width: int = 70,
+               max_falling: int = 1024):
     self.original = original
     self.byte_positions = self.parse_positions(original)
-    self.width = 70
+    self.width = width
+    self.max_falling = max_falling
 
-  def parse_positions(self, original: list[str]) -> set[Point]:
-    byte_positions = set[Point]()
+  def parse_positions(self, original: list[str]) -> list[Point]:
+    byte_positions = list[Point]()
     for line in original:
       matches = re.findall(r'(\d+),(\d+)', line)
       if len(matches) > 0:
         match = matches[0]
         x = int(match[0])
         y = int(match[1])
-        byte_positions.add(Point(x, y))
+        byte_positions.append(Point(x, y))
     return byte_positions
 
   ####
@@ -97,10 +102,14 @@ class MemorySpace:
       row = ''
       for x in range(0, self.width):
         p = Point(x, y)
-        if p in self.byte_positions:
-          row += '#'
-        else:
+        if p not in self.byte_positions:
           row += '.'
+        else:
+          found_index = self.byte_positions.index(p)
+          if found_index < self.max_falling:
+            row += '#'
+          else:
+            row += '.'
       print(row)
 
 
@@ -116,6 +125,6 @@ def readlines(source):
 ####
 # Main
 ####
-input = readlines('input18.txt')
-memory_space = MemorySpace(input)
+input = readlines('sample.txt')
+memory_space = MemorySpace(input, width=6, max_falling=12)
 memory_space.draw()
