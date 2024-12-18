@@ -199,8 +199,8 @@ def readlines(source):
 ####
 # Main
 ####
-input = readlines('sample.txt')
-memory_space = MemorySpace(input, width=7, max_falling=12)
+input = readlines('input18.txt')
+memory_space = MemorySpace(input)#, width=7, max_falling=12)
 path, cost = memory_space.find_path()
 memory_space.draw(path=path)
 print(f'Path cost: {cost}')
