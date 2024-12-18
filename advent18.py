@@ -76,7 +76,7 @@ class MemorySpace:
 
   def __init__(self,
                original: list[str],
-               width: int = 70,
+               width: int = 71,
                max_falling: int = 1024):
     self.original = original
     self.byte_positions = self.parse_positions(original)
@@ -125,6 +125,6 @@ def readlines(source):
 ####
 # Main
 ####
-input = readlines('sample.txt')
-memory_space = MemorySpace(input, width=6, max_falling=12)
+input = readlines('input18.txt')
+memory_space = MemorySpace(input)#, width=7, max_falling=12)
 memory_space.draw()
