@@ -52,7 +52,7 @@ class PathMark:
     self.cost = cost
 
   def __repr__(self) -> str:
-    return f'PathMark[point=({self.point.x}, {self.point.y}) previous={self.previous} cost={self.cost}]'
+    return f'PathMark[point=({self.point.x}, {self.point.y}) cost={self.cost}]'
 
   def __eq__(self, other: object) -> bool:
     if not isinstance(other, PathMark):
@@ -68,14 +68,12 @@ class PathMark:
 ####
 class MemorySpace:
 
-  def __init__(self,
-               original: list[str],
-               width: int = 71,
-               max_falling: int = 1024):
+  def __init__(self, original: list[str], width: int = 71):
     self.original = original
     self.byte_positions = self.parse_positions(original)
     self.width = width
-    self.max_falling = max_falling
+    self.cost_cache = dict[Point, int]()
+    self.path_cache = dict[Point, list[PathMark]]()
 
   def parse_positions(self, original: list[str]) -> list[Point]:
     byte_positions = list[Point]()
@@ -91,9 +89,12 @@ class MemorySpace:
   ####
   # Draw the map
   ####
-  def draw(self,
-           points: set[Point] = set[Point](),
-           path: list[PathMark] = list[PathMark]()):
+  def draw(
+      self,
+      max_falling: int,
+      points: set[Point] = set[Point](),
+      path: list[PathMark] = list[PathMark](),
+  ):
     visited_points = [pm.point for pm in path]
     for y in range(0, self.width):
       row = ''
@@ -105,7 +106,7 @@ class MemorySpace:
           row += '.'
         else:
           found_index = self.byte_positions.index(p)
-          if found_index < self.max_falling:
+          if found_index < max_falling:
             row += '#'
           else:
             row += '.'
@@ -115,29 +116,38 @@ class MemorySpace:
   # cost
   ####
   def cost(self, path_mark: PathMark, direction: Direction) -> int:
-    next_x = path_mark.point.x + direction.value[0]
-    next_y = path_mark.point.y + direction.value[1]
-
-    delta_x = self.width - next_x
-    delta_y = self.width - next_y
-
-    cost = path_mark.cost + 1# + delta_x * delta_x + delta_y * delta_y
+    cost = path_mark.cost + 1
     return cost
+
+  ####
+  # Find maximum bytes that can fall while still being able to have a path between (0, 0) and (width - 1, width - 1)
+  ####
+  def find_max_falling(self) -> int:
+    test_max = len(self.byte_positions) - 1
+
+    while test_max > 1024:
+      test_max -= 1
+
+      self.cost_cache.clear()
+      start = PathMark(Point(0, 0), None, 0)
+      self.cost_cache[start.point] = start.cost
+      path, cost = self.find_path([start], test_max)
+      if len(path) > 0:
+        return test_max
+    raise Exception('Could not find a higher position than part 1')
 
   ####
   # Find a path between (0, 0) and (width - 1 , width - 1)
   ####
-  def find_path(
-      self, visited_cost: dict[Point, int] = dict[Point, int]()
-  ) -> tuple[list[PathMark], int]:
+  def find_path(self, starts: list[PathMark],
+                max_falling: int) -> tuple[list[PathMark], int]:
     priority_queue = list[PathMark]()
     directions = [
         Direction.UP, Direction.DOWN, Direction.LEFT, Direction.RIGHT
     ]
 
-    start = Point(0, 0)
-    priority_queue.append(PathMark(start, None, 0))
-    visited_cost[start] = 0
+    for start in starts:
+      heappush(priority_queue, start)
 
     path_end = None
     while len(priority_queue) > 0:
@@ -149,7 +159,7 @@ class MemorySpace:
 
       # Check if this item is a duplicate and we've found a lower cost
       # way to reach this point
-      if visited_cost[item.point] < item.cost:
+      if self.cost_cache[item.point] < item.cost:
         #print(f'.  found lower cost way to {item.point}')
         continue
 
@@ -160,27 +170,32 @@ class MemorySpace:
         #print(f'. Checking point {p}')
         if x < 0 or x >= self.width or y < 0 or y >= self.width:
           continue
-        if p in self.byte_positions and self.byte_positions.index(p) < self.max_falling:
+
+        neighbors = self.path_cache.get(p, list[PathMark]())
+        neighbors.append(item)
+
+        if p in self.byte_positions and self.byte_positions.index(
+            p) < max_falling:
           #print(f'.  {p} is a byte')
           continue
 
         cost = self.cost(item, direction)
         # Allow duplicate path points if the cost of the new path is lower
-        if p not in visited_cost or visited_cost[p] > cost:
+        if p not in self.cost_cache or self.cost_cache[p] > cost:
           path_mark = PathMark(p, item, cost=cost)
           #print(f'. Adding to priority queue {path_mark.point}, cost={cost}')
-          visited_cost[p] = cost
+          self.cost_cache[p] = cost
           heappush(priority_queue, path_mark)
 
-    if path_end is None:
-      raise ValueError('No path found')
     path = list[PathMark]()
     curr = path_end
     #print(f'Found path: end={path_end}')
     while curr is not None:
       path.append(curr)
       curr = curr.previous
-    cost = path_end.cost
+    cost = -1
+    if path_end is not None:
+      cost = path_end.cost
     path.reverse()
     #points = [pm.point for pm in path]
     #print(f'Found path: {points}')
@@ -200,7 +215,9 @@ def readlines(source):
 # Main
 ####
 input = readlines('input18.txt')
-memory_space = MemorySpace(input)#, width=7, max_falling=12)
-path, cost = memory_space.find_path()
-memory_space.draw(path=path)
-print(f'Path cost: {cost}')
+
+max_falling = 1024
+memory_space = MemorySpace(input)  #, width=7, max_falling=max_falling)
+byte_index = memory_space.find_max_falling()
+#memory_space.draw(max_falling=max_falling, path=path)
+print(f'Max falling bytes: {memory_space.byte_positions[byte_index]}')
