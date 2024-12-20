@@ -80,15 +80,16 @@ for pattern in available_patterns:
 count = 0
 
 available_patterns.sort(key=lambda x: len(x), reverse=True)
-desired_designs = ['rugbgbwwbbgrwrbubgugrgbrrbgwrbbgbwurwgrbr']
+#desired_designs = ['rugbgbwwbbgrwrbubgugrgbrrbgwrbbgbwurwgrbr']
 unmatched = set[str]()
 for design in desired_designs:
   solution, fails = find_patterns(available_patterns, unmatched, design)
   unmatched.union(fails)
-  print(f'Solution: {solution} for {design}')
+  #print(f'Solution: {solution} for {design}')
   if len(solution) > 0:
     count += 1
   else:
-    print(f'No solution for {design}')
+    pass
+    #print(f'No solution for {design}')
     #break
 print(f'Solution count: {count}')
