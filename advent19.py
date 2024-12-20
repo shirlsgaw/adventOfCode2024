@@ -19,12 +19,12 @@ def find_patterns(available_patterns: list[str], design: str) -> list[str]:
 
   # Base case: all patterns are too long for this design
   if len(design) < min_length:
-    print(f'Base case 1: *{design}* is too short')
+    #print(f'Base case 1: *{design}* is too short')
     return []
 
   for pattern in available_patterns:
     if design.startswith(pattern):
-      print(f'Found prefix {pattern} for {design}')
+      #print(f'Found prefix {pattern} for {design}')
       remaining_design = design[len(pattern):]
       # Base case 2: found exact match
       if len(remaining_design) == 0:
@@ -33,10 +33,10 @@ def find_patterns(available_patterns: list[str], design: str) -> list[str]:
       # Recursive case:
       matches = find_patterns(available_patterns, remaining_design)
       if len(matches) > 0:
-        print(f'. Found match [\'{pattern}\'] + {matches} = {design}')
+        #print(f'. Found match [\'{pattern}\'] + {matches} = {design}')
         return [pattern] + matches
       else:
-        print(f'. No match found for {pattern} + {remaining_design}')
+        #print(f'. No match found for {pattern} + {remaining_design}')
         return []
   return []
 
@@ -70,5 +70,12 @@ print(f'Desired designs: {desired_designs}')
 
 if available_patterns is None:
   raise Exception('Could not find patterns')
-solution = find_patterns(available_patterns, 'rg')
-print(f'Solution: {solution}')
+available_patterns.sort(key=len, reverse=True)
+#print(f'Sorted patterns: {available_patterns}')
+count = 0
+for design in desired_designs:
+  solution = find_patterns(available_patterns, design)
+  print(f'Solution: {solution} for {design}')
+  if len(solution) > 0:
+    count += 1
+print(f'Solution count: {count}')
