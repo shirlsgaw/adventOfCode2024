@@ -16,7 +16,7 @@ def find_patterns(available_patterns: list[str], unmatched: set[str],
   # Early terminate if we know there's no matches due to previous iterations
   if design in unmatched:
     #print(f'. Early terminate {design}')
-    return ([], unmatched)
+    return (0, unmatched)
   if design in matched:
     #print(f'  Already matched {design}')
     return (matched[design], unmatched)
