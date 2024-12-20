@@ -1,3 +1,4 @@
+from os import error
 from typing import Self
 from enum import Enum
 from heapq import heappush
@@ -10,50 +11,64 @@ import re
 # Find patterns that can combine to match this design
 ####
 def find_patterns(available_patterns: list[str], unmatched: set[str],
-                  matched: dict[str,
-                                int], design: str) -> tuple[int, set[str]]:
+                  design: str) -> tuple[list[str], set[str]]:
   #print('Finding patterns for design: ' + design)
   # Early terminate if we know there's no matches due to previous iterations
   if design in unmatched:
     #print(f'. Early terminate {design}')
-    return (0, unmatched)
-  if design in matched:
-    #print(f'  Already matched {design}')
-    return (matched[design], unmatched)
+    return ([], unmatched)
 
-  solutions = 0
   for pattern in available_patterns:
     #print(f'  Checking pattern: {pattern}')
     length = len(pattern)
     prefix = design[0:length]
     suffix = design[length:]
 
+    # Base case found match
     if design == pattern:
-      #print(f'    {pattern} is a match, design {design}')
-
-      solutions += 1
+      return [design], unmatched
     elif prefix == pattern:  # Recursive case
-      matches, fails = find_patterns(available_patterns, unmatched, matched,
-                                     suffix)
+      matches, fails = find_patterns(available_patterns, unmatched, suffix)
       unmatched.union(fails)
-      if matches > 0:
-        solutions += matches
+      if len(matches) > 0:
+        return [pattern] + matches, unmatched
       else:
-        #print(f'    skipping {pattern} for {design}')
         # Prefix did not work, try another prefix
         unmatched.add(design)
     else:
       # Try another pattern
       pass
   #print(f'. No match found for *{design}*')
-  if solutions == 0:
-    #print(f'. No matches found for {design}')
-    unmatched.add(design)
-  #num_solutions = len(solutions)
-  #print(f'. Returning {num_solutions} for {design}')
+  unmatched.add(design)
+  return [], unmatched
 
-  matched[design] = solutions
-  return solutions, unmatched
+
+####
+# Count all possible arrangement of patterns for this design
+####
+def find_all_matches(available_patterns: list[str], unmatched: set[str],
+                     matched_dict: dict[str, int], design: str) -> int:
+  if design in unmatched:
+    return 0
+  if design in matched_dict:
+    return matched_dict[design]
+  num_solutions = 0
+  for pattern in available_patterns:
+    length = len(pattern)
+    prefix = design[0:length]
+    suffix = design[length:]
+
+    # Base case found match
+    if design == pattern:
+      num_solutions += 1
+    elif prefix == pattern:  # Recursive case
+      num_solutions += find_all_matches(available_patterns, unmatched, matched_dict,
+                                        suffix)
+    else:
+      # Try another pattern
+      pass
+  matched_dict[design] = num_solutions
+  return num_solutions
 
 
 ####
@@ -68,7 +83,7 @@ def readlines(source):
 ####
 # Main
 ####
-input = readlines('sample.txt')
+input = readlines('input19.txt')
 
 available_patterns = None
 desired_designs = list[str]()
@@ -94,19 +109,30 @@ for pattern in available_patterns:
 count = 0
 
 available_patterns.sort(key=lambda x: len(x), reverse=True)
-#desired_designs = ['gwwbbrugrggrwuuugggwgurbrurbrrggwwbgbwwbbrwwwurwwuu']
+#desired_designs = ['rugbgbwwbbgrwrbubgugrgbrrbgwrbbgbwurwgrbr']
 unmatched = set[str]()
-matched = dict[str, int]()
+solution_exists = list[str]()
 for design in desired_designs:
-  print(f'Checking design: {design}')
-  solution, fails = find_patterns(available_patterns, unmatched, matched,
-                                  design)
+  solution, fails = find_patterns(available_patterns, unmatched, design)
   unmatched.union(fails)
-  print(f'+ Solution: {solution} for {design}')
-  if solution > 0:
-    count += solution
+  #print(f'Solution: {solution} for {design}')
+  if len(solution) > 0:
+    count += 1
+    solution_exists.append(design)
   else:
     pass
     #print(f'No solution for {design}')
     #break
-print(f'Solution count: {count}')
+num_exists = len(solution_exists)
+print(f'Solution count: {num_exists}')
+
+total = 0
+for design in solution_exists:
+  print(f'Design: {design}')
+  matched_dict = dict[str, int]()
+  num = find_all_matches(available_patterns, unmatched, matched_dict, design)
+  print(f'+Solution: {design} with {num} matches')
+  if num == 0:
+    raise AssertionError('No solution found for ' + design)
+  total += num
+print(f'Total: {total}')
