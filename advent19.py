@@ -5,6 +5,7 @@ from heapq import heappush
 from heapq import heappop
 from dataclasses import dataclass, field
 import re
+from functools import lru_cache
 
 
 ####
@@ -46,14 +47,20 @@ def find_patterns(available_patterns: list[str], unmatched: set[str],
 ####
 # Count all possible arrangement of patterns for this design
 ####
-def find_all_matches(available_patterns: list[str], unmatched: set[str],
-                     matched_dict: dict[str, int], design: str) -> int:
-  if design in unmatched:
+UNMATCHED = None
+AVAILABLE_PATTERNS = None
+
+
+@lru_cache(maxsize=1028)
+def find_all_matches(design: str) -> int:
+  if UNMATCHED is None:
+    raise Exception('UNMATCHED not initialized')
+  if AVAILABLE_PATTERNS is None:
+    raise Exception('AVAILABLE_PATTERNS not initialized')
+  if design in UNMATCHED:
     return 0
-  if design in matched_dict:
-    return matched_dict[design]
   num_solutions = 0
-  for pattern in available_patterns:
+  for pattern in AVAILABLE_PATTERNS:
     length = len(pattern)
     prefix = design[0:length]
     suffix = design[length:]
@@ -62,8 +69,7 @@ def find_all_matches(available_patterns: list[str], unmatched: set[str],
     if design == pattern:
       num_solutions += 1
     elif prefix == pattern:  # Recursive case
-      num_solutions += find_all_matches(available_patterns, unmatched, matched_dict,
-                                        suffix)
+      num_solutions += find_all_matches(suffix)
     else:
       # Try another pattern
       pass
@@ -126,13 +132,16 @@ for design in desired_designs:
 num_exists = len(solution_exists)
 print(f'Solution count: {num_exists}')
 
+AVAILABLE_PATTERNS = available_patterns
+UNMATCHED = unmatched
 total = 0
-for design in solution_exists:
+count_exists = 0
+for design in desired_designs:
   print(f'Design: {design}')
   matched_dict = dict[str, int]()
-  num = find_all_matches(available_patterns, unmatched, matched_dict, design)
+  num = find_all_matches(design)
   print(f'+Solution: {design} with {num} matches')
-  if num == 0:
-    raise AssertionError('No solution found for ' + design)
+  if num > 0:
+    count_exists += 1
   total += num
-print(f'Total: {total}')
+print(f'Total: {total}, Exists: {count_exists}')
