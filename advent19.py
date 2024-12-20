@@ -17,6 +17,7 @@ def find_patterns(available_patterns: list[str], unmatched: set[str],
     #print(f'. Early terminate {design}')
     return ([], unmatched)
 
+  solutions = list[str]()
   for pattern in available_patterns:
     #print(f'  Checking pattern: {pattern}')
     length = len(pattern)
@@ -25,12 +26,13 @@ def find_patterns(available_patterns: list[str], unmatched: set[str],
 
     # Base case found match
     if design == pattern:
-      return [design], unmatched
+      solutions.append(pattern)
     elif prefix == pattern:  # Recursive case
       matches, fails = find_patterns(available_patterns, unmatched, suffix)
       unmatched.union(fails)
       if len(matches) > 0:
-        return [pattern] + matches, unmatched
+        for match in matches:
+          solutions.append(pattern + '|' + match)
       else:
         # Prefix did not work, try another prefix
         unmatched.add(design)
@@ -38,8 +40,9 @@ def find_patterns(available_patterns: list[str], unmatched: set[str],
       # Try another pattern
       pass
   #print(f'. No match found for *{design}*')
-  unmatched.add(design)
-  return [], unmatched
+  if len(solutions) == 0:
+    unmatched.add(design)
+  return solutions, unmatched
 
 
 ####
@@ -54,7 +57,7 @@ def readlines(source):
 ####
 # Main
 ####
-input = readlines('input19.txt')
+input = readlines('sample.txt')
 
 available_patterns = None
 desired_designs = list[str]()
@@ -87,7 +90,7 @@ for design in desired_designs:
   unmatched.union(fails)
   #print(f'Solution: {solution} for {design}')
   if len(solution) > 0:
-    count += 1
+    count += len(solution)
   else:
     pass
     #print(f'No solution for {design}')
