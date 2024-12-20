@@ -15,12 +15,10 @@ AVAILABLE_PATTERNS = None
 ####
 @lru_cache(maxsize=1028)
 def find_patterns(design: str) -> list[str]:
-  #print('Finding patterns for design: ' + design)
   if AVAILABLE_PATTERNS is None:
     raise Exception('Available patterns not loaded')
 
   for pattern in AVAILABLE_PATTERNS:
-    #print(f'  Checking pattern: {pattern}')
     length = len(pattern)
     prefix = design[0:length]
     suffix = design[length:]
@@ -37,7 +35,6 @@ def find_patterns(design: str) -> list[str]:
     else:
       # Try another pattern
       pass
-  #print(f'. No match found for *{design}*')
   return []
 
 
@@ -91,8 +88,6 @@ for line in input:
       available_patterns.append(token.lstrip())
   elif len(line) > 0:
     desired_designs.append(line)
-#print(f'Available patterns: {available_patterns}')
-#print(f'Desired designs: {desired_designs}')
 
 if available_patterns is None:
   raise Exception('Could not find patterns')
@@ -104,26 +99,19 @@ for pattern in available_patterns:
   pattern_dict[length] = matches
 count = 0
 
-available_patterns.sort(key=lambda x: len(x), reverse=True)
 AVAILABLE_PATTERNS = available_patterns
 
 for design in desired_designs:
   solution = find_patterns(design)
   if len(solution) > 0:
     count += 1
-  else:
-    pass
-    #print(f'No solution for {design}')
-    #break
 print(f'Solution count: {count}')
 
 total = 0
 count_exists = 0
 for design in desired_designs:
-  #print(f'Design: {design}')
   matched_dict = dict[str, int]()
   num = find_all_matches(design)
-  #print(f'+Solution: {design} with {num} matches')
   if num > 0:
     count_exists += 1
   total += num
