@@ -7,19 +7,19 @@ from dataclasses import dataclass, field
 import re
 from functools import lru_cache
 
+AVAILABLE_PATTERNS = None
+
 
 ####
 # Find patterns that can combine to match this design
 ####
-def find_patterns(available_patterns: list[str], unmatched: set[str],
-                  design: str) -> tuple[list[str], set[str]]:
+@lru_cache(maxsize=1028)
+def find_patterns(design: str) -> list[str]:
   #print('Finding patterns for design: ' + design)
-  # Early terminate if we know there's no matches due to previous iterations
-  if design in unmatched:
-    #print(f'. Early terminate {design}')
-    return ([], unmatched)
+  if AVAILABLE_PATTERNS is None:
+    raise Exception('Available patterns not loaded')
 
-  for pattern in available_patterns:
+  for pattern in AVAILABLE_PATTERNS:
     #print(f'  Checking pattern: {pattern}')
     length = len(pattern)
     prefix = design[0:length]
@@ -27,38 +27,29 @@ def find_patterns(available_patterns: list[str], unmatched: set[str],
 
     # Base case found match
     if design == pattern:
-      return [design], unmatched
+      return [design]
     elif prefix == pattern:  # Recursive case
-      matches, fails = find_patterns(available_patterns, unmatched, suffix)
-      unmatched.union(fails)
+      matches = find_patterns(suffix)
       if len(matches) > 0:
-        return [pattern] + matches, unmatched
-      else:
-        # Prefix did not work, try another prefix
-        unmatched.add(design)
+        solution = [pattern]
+        solution.extend(matches)
+        return solution
     else:
       # Try another pattern
       pass
   #print(f'. No match found for *{design}*')
-  unmatched.add(design)
-  return [], unmatched
+  return []
 
 
 ####
 # Count all possible arrangement of patterns for this design
 ####
-UNMATCHED = None
-AVAILABLE_PATTERNS = None
 
 
 @lru_cache(maxsize=1028)
 def find_all_matches(design: str) -> int:
-  if UNMATCHED is None:
-    raise Exception('UNMATCHED not initialized')
   if AVAILABLE_PATTERNS is None:
     raise Exception('AVAILABLE_PATTERNS not initialized')
-  if design in UNMATCHED:
-    return 0
   num_solutions = 0
   for pattern in AVAILABLE_PATTERNS:
     length = len(pattern)
@@ -73,7 +64,6 @@ def find_all_matches(design: str) -> int:
     else:
       # Try another pattern
       pass
-  matched_dict[design] = num_solutions
   return num_solutions
 
 
@@ -115,32 +105,25 @@ for pattern in available_patterns:
 count = 0
 
 available_patterns.sort(key=lambda x: len(x), reverse=True)
-#desired_designs = ['rugbgbwwbbgrwrbubgugrgbrrbgwrbbgbwurwgrbr']
-unmatched = set[str]()
-solution_exists = list[str]()
+AVAILABLE_PATTERNS = available_patterns
+
 for design in desired_designs:
-  solution, fails = find_patterns(available_patterns, unmatched, design)
-  unmatched.union(fails)
-  #print(f'Solution: {solution} for {design}')
+  solution = find_patterns(design)
   if len(solution) > 0:
     count += 1
-    solution_exists.append(design)
   else:
     pass
     #print(f'No solution for {design}')
     #break
-num_exists = len(solution_exists)
-print(f'Solution count: {num_exists}')
+print(f'Solution count: {count}')
 
-AVAILABLE_PATTERNS = available_patterns
-UNMATCHED = unmatched
 total = 0
 count_exists = 0
 for design in desired_designs:
-  print(f'Design: {design}')
+  #print(f'Design: {design}')
   matched_dict = dict[str, int]()
   num = find_all_matches(design)
-  print(f'+Solution: {design} with {num} matches')
+  #print(f'+Solution: {design} with {num} matches')
   if num > 0:
     count_exists += 1
   total += num
