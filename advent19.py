@@ -7,6 +7,41 @@ import re
 
 
 ####
+# Find patterns that can combine to match this design
+####
+def find_patterns(available_patterns: list[str], design: str) -> list[str]:
+  min_length = None
+  for pattern in available_patterns:
+    if min_length is None or len(pattern) < min_length:
+      min_length = len(pattern)
+  if min_length is None:
+    raise Exception('Could not detect minimum')
+
+  # Base case: all patterns are too long for this design
+  if len(design) < min_length:
+    print(f'Base case 1: *{design}* is too short')
+    return []
+
+  for pattern in available_patterns:
+    if design.startswith(pattern):
+      print(f'Found prefix {pattern} for {design}')
+      remaining_design = design[len(pattern):]
+      # Base case 2: found exact match
+      if len(remaining_design) == 0:
+        return [pattern]
+
+      # Recursive case:
+      matches = find_patterns(available_patterns, remaining_design)
+      if len(matches) > 0:
+        print(f'. Found match [\'{pattern}\'] + {matches} = {design}')
+        return [pattern] + matches
+      else:
+        print(f'. No match found for {pattern} + {remaining_design}')
+        return []
+  return []
+
+
+####
 # readlines: reads input from file into lines of strings
 ####
 def readlines(source):
@@ -21,20 +56,19 @@ def readlines(source):
 input = readlines('sample.txt')
 
 available_patterns = None
-min_length = None
-patterns_dict = dict[int, list[str]]()
 desired_designs = list[str]()
 for line in input:
   tokens = line.split(',')
   if len(tokens) > 1:
-    available_patterns = tokens
-    for pattern in available_patterns:
-      length = len(pattern)
-      if min_length is None or length < min_length:
-        min_length = length
-      matches = patterns_dict.get(length, list[str]())
-      matches.append(pattern)
+    available_patterns = list[str]()
+    for token in tokens:
+      available_patterns.append(token.lstrip())
   elif len(line) > 0:
     desired_designs.append(line)
 print(f'Available patterns: {available_patterns}')
 print(f'Desired designs: {desired_designs}')
+
+if available_patterns is None:
+  raise Exception('Could not find patterns')
+solution = find_patterns(available_patterns, 'rg')
+print(f'Solution: {solution}')
