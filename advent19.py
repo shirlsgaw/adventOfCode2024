@@ -9,39 +9,36 @@ import re
 ####
 # Find patterns that can combine to match this design
 ####
-def find_patterns(pattern_dict: dict[int, list[str]], unmatched: list[str],
-                  design: str) -> tuple[list[str], list[str]]:
-  # print('Finding patterns for design: ' + design)
+def find_patterns(available_patterns: list[str], unmatched: set[str],
+                  design: str) -> tuple[list[str], set[str]]:
+  #print('Finding patterns for design: ' + design)
   # Early terminate if we know there's no matches due to previous iterations
   if design in unmatched:
     #print(f'. Early terminate {design}')
     return ([], unmatched)
 
-  prefix_lengths = [key for key in pattern_dict.keys()]
-  prefix_lengths.sort(reverse=True)
+  for pattern in available_patterns:
+    #print(f'  Checking pattern: {pattern}')
+    length = len(pattern)
+    prefix = design[0:length]
+    suffix = design[length:]
 
-  for prefix_length in prefix_lengths:
-    #print(f'prefix_length: {prefix_length}')
-    prefix = design[0:prefix_length]
-    suffix = design[prefix_length:]
-    for pattern in pattern_dict[prefix_length]:
-      #print(f'.   pattern: {pattern}')
-      if pattern == design:
-        print(f'. Found exact match {pattern} for {design}')
-        return [pattern], []
-      if prefix == pattern:
-        #print(f'.  Found prefix {pattern} for {design}')
-        # Recursive case:
-        matches, fails = find_patterns(pattern_dict, unmatched, suffix)
-        if len(matches) > 0:
-          #print(f'.  Found match [\'{pattern}\'] + {matches} = {design}')
-          return [pattern] + matches, []
-        else:
-          #print(f'.  Failed to find match for {design}')
-          unmatched.append(design)
-          unmatched.extend(fails)
+    # Base case found match
+    if design == pattern:
+      return [design], unmatched
+    elif prefix == pattern:  # Recursive case
+      matches, fails = find_patterns(available_patterns, unmatched, suffix)
+      unmatched.union(fails)
+      if len(matches) > 0:
+        return [pattern] + matches, unmatched
+      else:
+        # Prefix did not work, try another prefix
+        unmatched.add(design)
+    else:
+      # Try another pattern
+      pass
   #print(f'. No match found for *{design}*')
-  unmatched.append(design)
+  unmatched.add(design)
   return [], unmatched
 
 
@@ -82,14 +79,16 @@ for pattern in available_patterns:
   pattern_dict[length] = matches
 count = 0
 
-unmatched = list[str]()
+available_patterns.sort(key=lambda x: len(x), reverse=True)
+desired_designs = ['rugbgbwwbbgrwrbubgugrgbrrbgwrbbgbwurwgrbr']
+unmatched = set[str]()
 for design in desired_designs:
-  solution, fails = find_patterns(pattern_dict, unmatched, design)
+  solution, fails = find_patterns(available_patterns, unmatched, design)
+  unmatched.union(fails)
   print(f'Solution: {solution} for {design}')
   if len(solution) > 0:
     count += 1
   else:
     print(f'No solution for {design}')
-    unmatched.extend(fails)
     #break
 print(f'Solution count: {count}')
