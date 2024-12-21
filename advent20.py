@@ -115,8 +115,6 @@ class Racetrack:
   ####
   def is_valid_cheat(self, begin: Point, end: Point, candidate: Point,
                      steps: int) -> bool:
-    if candidate not in self.walls:
-      return False
     cost_begin = self.cost_cache[begin]
     cost_end = self.cost_cache[end]
     diff = cost_end - cost_begin - 2
@@ -132,11 +130,13 @@ class Racetrack:
         delta_x = path[j].x - path[i].x
         delta_y = path[j].y - path[i].y
         if delta_x == 0 and delta_y * delta_y == 4:
-          candidate = Point(path[i].x, path[i].y + delta_y // 2)
+          new_y = path[i].y + delta_y // abs(delta_y)
+          candidate = Point(path[i].x, new_y)
           if self.is_valid_cheat(path[i], path[j], candidate, steps):
             potential_cheats.append(candidate)
         elif delta_y == 0 and delta_x * delta_x == 4:
-          candidate = Point(path[i].x + delta_x // 2, path[i].y)
+          new_x = path[i].x + delta_x // abs(delta_x)
+          candidate = Point(new_x, path[i].y)
           if self.is_valid_cheat(path[i], path[j], candidate, steps):
             potential_cheats.append(candidate)
     return potential_cheats
@@ -162,7 +162,7 @@ original_path = racetrack.find_path()
 cost = len(original_path) - 1
 print(f'Original cost = {cost}')
 
-saves = []#20, 38, 64]
+saves = []  #20, 38, 64]
 for save in saves:
   cheats = racetrack.find_cheats(original_path, save)
   print(f'Cheats for {save} steps: {cheats}')
