@@ -120,15 +120,15 @@ class Racetrack:
     cost_begin = self.cost_cache[begin]
     cost_end = self.cost_cache[end]
     diff = cost_end - cost_begin - 2
-    return diff == steps
+    return diff >= steps
 
   ####
   # find walls to remove that would shorten the path by N steps
   ####
   def find_cheats(self, path: list[Point], steps: int) -> list[Point]:
     potential_cheats = list[Point]()
-    for i in range(0, len(path)):
-      for j in range(i + steps + 2, len(path)):
+    for i in range(0, len(path) - 1):
+      for j in range(i + 1, len(path)):
         delta_x = path[j].x - path[i].x
         delta_y = path[j].y - path[i].y
         if delta_x == 0 and delta_y * delta_y == 4:
@@ -155,28 +155,22 @@ def readlines(source):
 # Main
 ####
 
-input = readlines('sample.txt')
+input = readlines('input20.txt')
 racetrack = Racetrack(input)
-racetrack.draw()
+#racetrack.draw()
 original_path = racetrack.find_path()
 cost = len(original_path) - 1
 print(f'Original cost = {cost}')
 
-saves = [20, 38, 64]
+saves = []#20, 38, 64]
 for save in saves:
   cheats = racetrack.find_cheats(original_path, save)
   print(f'Cheats for {save} steps: {cheats}')
   for cheat in cheats:
-    print(f'Save: {save}, Cheat: {cheat}')
-    racetrack.draw(point=cheat)
+    print(f'. Save: {save}, Cheat: {cheat}')
+    #racetrack.draw(point=cheat)
 
 # Part 1: find all cheats >= 100
-#count = 0
-#for save in range(100, len(original_path)):
-#  print(f'Looking for saves: {save}')
-#  cheats = racetrack.find_cheats(original_path, save)
-#  num_cheats = len(cheats)
-#  if num_cheats > 0:
-#    print(f'Save: {save}, Cheats: {num_cheats}')
-#  count += num_cheats
-#print(f'Part 1: {count}')
+cheats = racetrack.find_cheats(original_path, 100)
+num_cheats = len(cheats)
+print(f'Part 1: {num_cheats}')
