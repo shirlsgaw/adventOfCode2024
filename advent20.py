@@ -66,7 +66,7 @@ class Racetrack:
     if self.end is None:
       raise Exception('No end')
 
-  def draw(self) -> None:
+  def draw(self, point: Point | None = None) -> None:
     for y in range(0, len(self.original)):
       row = ''
       for x in range(0, len(self.original[y])):
@@ -76,6 +76,8 @@ class Racetrack:
           row += 'S'
         elif Point(x, y) == self.end:
           row += 'E'
+        elif Point(x, y) == point:
+          row += '1'
         else:
           row += '.'
       print(row)
@@ -105,6 +107,33 @@ class Racetrack:
             queue.append(Node(next_point, current))
     return []
 
+  ####
+  # find walls to remove that would shorten the path by N steps
+  ####
+  def find_cheats(self, path: list[Point], steps: int) -> list[Point]:
+    potential_cheats = list[Point]()
+    for i in range(0, len(path)):
+      for j in range(i + steps + 2, len(path)):
+        delta_x = path[j].x - path[i].x
+        delta_y = path[j].y - path[i].y
+        if delta_x == 0 and delta_y * delta_y == 4:
+          candidate = Point(path[i].x, path[i].y + delta_y // 2)
+          if candidate in self.walls:
+            potential_cheats.append(candidate)
+        elif delta_y == 0 and delta_x * delta_x == 4:
+          candidate = Point(path[i].x + delta_x // 2, path[i].y)
+          if candidate in self.walls:
+            potential_cheats.append(candidate)
+    # Validate this is actually a path of the desired lenth
+    cheats = list[Point]()
+    for cheat in potential_cheats:
+      self.walls.remove(cheat)
+      new_path = self.find_path()
+      if len(path) - len(new_path) == steps:
+        cheats.append(cheat)
+      self.walls.add(cheat)
+    return cheats
+
 
 ####
 # readlines: reads input from file into lines of strings
@@ -122,6 +151,10 @@ def readlines(source):
 input = readlines('sample.txt')
 racetrack = Racetrack(input)
 racetrack.draw()
-path = racetrack.find_path()
-cost = len(path) - 1
-print(f'Cost = {cost}')
+original_path = racetrack.find_path()
+cost = len(original_path) - 1
+print(f'Original cost = {cost}')
+
+cheats = racetrack.find_cheats(original_path, 12)
+for cheat in cheats:
+  print(f'Cheat: {cheat}')
