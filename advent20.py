@@ -50,6 +50,7 @@ class Racetrack:
 
   def __init__(self, original: list[str]) -> None:
     self.original = original
+    self.cost_cache = dict[Point, int]()
     self.walls = set[Point]()
     self.start = None
     self.end = None
@@ -63,6 +64,7 @@ class Racetrack:
           self.end = Point(x, y)
     if self.start is None:
       raise Exception('No start')
+    self.cost_cache[self.start] = 0
     if self.end is None:
       raise Exception('No end')
 
@@ -105,7 +107,20 @@ class Racetrack:
           if next_point not in visited and next_point not in self.walls:
             visited.add(next_point)
             queue.append(Node(next_point, current))
+            self.cost_cache[next_point] = self.cost_cache[current.point] + 1
     return []
+
+  ####
+  # Satifies cheat conditions
+  ####
+  def is_valid_cheat(self, begin: Point, end: Point, candidate: Point,
+                     steps: int) -> bool:
+    if candidate not in self.walls:
+      return False
+    cost_begin = self.cost_cache[begin]
+    cost_end = self.cost_cache[end]
+    diff = cost_end - cost_begin - 2
+    return diff == steps
 
   ####
   # find walls to remove that would shorten the path by N steps
@@ -118,21 +133,13 @@ class Racetrack:
         delta_y = path[j].y - path[i].y
         if delta_x == 0 and delta_y * delta_y == 4:
           candidate = Point(path[i].x, path[i].y + delta_y // 2)
-          if candidate in self.walls:
+          if self.is_valid_cheat(path[i], path[j], candidate, steps):
             potential_cheats.append(candidate)
         elif delta_y == 0 and delta_x * delta_x == 4:
           candidate = Point(path[i].x + delta_x // 2, path[i].y)
-          if candidate in self.walls:
+          if self.is_valid_cheat(path[i], path[j], candidate, steps):
             potential_cheats.append(candidate)
-    # Validate this is actually a path of the desired lenth
-    cheats = list[Point]()
-    for cheat in potential_cheats:
-      self.walls.remove(cheat)
-      new_path = self.find_path()
-      if len(path) - len(new_path) == steps:
-        cheats.append(cheat)
-      self.walls.add(cheat)
-    return cheats
+    return potential_cheats
 
 
 ####
@@ -158,7 +165,18 @@ print(f'Original cost = {cost}')
 saves = [20, 38, 64]
 for save in saves:
   cheats = racetrack.find_cheats(original_path, save)
+  print(f'Cheats for {save} steps: {cheats}')
   for cheat in cheats:
     print(f'Save: {save}, Cheat: {cheat}')
     racetrack.draw(point=cheat)
-  
+
+# Part 1: find all cheats >= 100
+#count = 0
+#for save in range(100, len(original_path)):
+#  print(f'Looking for saves: {save}')
+#  cheats = racetrack.find_cheats(original_path, save)
+#  num_cheats = len(cheats)
+#  if num_cheats > 0:
+#    print(f'Save: {save}, Cheats: {num_cheats}')
+#  count += num_cheats
+#print(f'Part 1: {count}')
