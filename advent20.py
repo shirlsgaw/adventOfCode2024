@@ -70,14 +70,14 @@ class Racetrack:
     for y in range(0, len(self.original)):
       row = ''
       for x in range(0, len(self.original[y])):
-        if Point(x, y) in self.walls:
+        if Point(x, y) == point:
+          row += '1'
+        elif Point(x, y) in self.walls:
           row += '#'
         elif Point(x, y) == self.start:
           row += 'S'
         elif Point(x, y) == self.end:
           row += 'E'
-        elif Point(x, y) == point:
-          row += '1'
         else:
           row += '.'
       print(row)
@@ -155,6 +155,10 @@ original_path = racetrack.find_path()
 cost = len(original_path) - 1
 print(f'Original cost = {cost}')
 
-cheats = racetrack.find_cheats(original_path, 12)
-for cheat in cheats:
-  print(f'Cheat: {cheat}')
+saves = [20, 38, 64]
+for save in saves:
+  cheats = racetrack.find_cheats(original_path, save)
+  for cheat in cheats:
+    print(f'Save: {save}, Cheat: {cheat}')
+    racetrack.draw(point=cheat)
+  
